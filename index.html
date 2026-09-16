@@ -161,8 +161,8 @@
 </div>
 
 <div class="sticky-top nav-quick shadow-sm" id="navQuick">
-  <button onclick="switchTab('sec-tongquan')" class="active"><i class="fa-solid fa-chart-pie me-1"></i>1. Tổng quan</button>
-  <button onclick="switchTab('sec-luyke')" class=""><i class="fa-solid fa-table-list me-1"></i>2. Lũy Kế NVBH</button>
+  <button onclick="switchTab('sec-tongquan')" class=""><i class="fa-solid fa-chart-pie me-1"></i>1. Tổng quan</button>
+  <button onclick="switchTab('sec-luyke')" class="active"><i class="fa-solid fa-table-list me-1"></i>2. Lũy Kế NVBH</button>
   <button onclick="switchTab('sec-kpi-ds')"><i class="fa-solid fa-boxes-stacked me-1"></i>3. Doanh số 6 KPI</button>
   <button onclick="switchTab('sec-banlai')"><i class="fa-solid fa-arrows-rotate me-1"></i>4. Bán lại</button>
   <button onclick="switchTab('sec-kenh')"><i class="fa-solid fa-shop me-1"></i>5. Kênh</button>
@@ -170,14 +170,14 @@
   <button onclick="switchTab('sec-bancheo')"><i class="fa-solid fa-shuffle me-1"></i>7. Bán Chéo Sữa Nước</button>
   <button onclick="switchTab('sec-aso')"><i class="fa-solid fa-bullseye me-1"></i>8. ASO 6 KPI</button>
   <button onclick="switchTab('sec-khachhang')"><i class="fa-solid fa-users me-1"></i>9. DS Khách Hàng</button>
-  <button onclick="switchTab('sec-tuyends')" class=""><i class="fa-solid fa-route me-1"></i>10. Ghép Tuyến &amp; DS</button>
+  <button onclick="switchTab('sec-tuyends')"><i class="fa-solid fa-route me-1"></i>10. Ghép Tuyến &amp; DS</button>
   <button onclick="switchTab('sec-homnay')"><i class="fa-solid fa-bolt me-1"></i>11. Hôm Nay</button>
 </div>
 
 <div class="container-fluid px-2 mt-2">
 
   <!-- ================= 1. TỔNG QUAN USM ================= -->
-  <div id="sec-tongquan" class="section-tab active">
+  <div id="sec-tongquan" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-chart-pie me-1"></i> 1. TỔNG QUAN DOANH SỐ &amp; CHỈ TIÊU TOÀN KHU VỰC</div>
     <div class="row g-2 mb-2">
       <div class="col-6">
@@ -216,7 +216,7 @@
         <div id="progressBarFill" style="background: linear-gradient(90deg, rgb(239, 68, 68), rgb(248, 113, 113)); height: 100%; width: 32.8242%; transition: width 0.3s;"></div>
       </div>
       <div id="runRateSummary" class="mt-2" style="font-size: 0.72rem; color: #3d5a75;">Còn thiếu <strong class="text-danger">15,565.9 tr</strong> cho <strong>12 ngày</strong> còn lại → <strong>mỗi ngày cần đạt 1,297.2 tr</strong> (kế hoạch gốc chỉ 965.5 tr/ngày).</div>
-      <div style="position:relative; height:200px; margin-top:8px;"><canvas id="runRateChart" style="box-sizing: border-box; display: block; height: 200px; width: 1473px;" width="1842" height="250"></canvas></div>
+      <div style="position:relative; height:200px; margin-top:8px;"><canvas id="runRateChart" width="1842" height="250" style="display: block; box-sizing: border-box; height: 200px; width: 1473px;"></canvas></div>
     </div>
 
     <div class="card-box">
@@ -288,7 +288,7 @@
 
     <div class="card-box" style="border-left: 3px solid var(--info);">
       <div class="fw-bold mb-2" style="font-size: 0.78rem; color: var(--info);"><i class="fa-solid fa-chart-line me-1"></i> Lịch Sử Doanh Số Nhiều Ngày (Lưu Tự Động Mỗi Lần Nạp Data)</div>
-      <div style="position:relative; height:180px;"><canvas id="historyChart" style="box-sizing: border-box; display: block; height: 180px; width: 1473px;" width="1842" height="225"></canvas></div>
+      <div style="position:relative; height:180px;"><canvas id="historyChart" width="1842" height="225" style="display: block; box-sizing: border-box; height: 180px; width: 1473px;"></canvas></div>
       <div id="historyEmpty" class="text-center text-muted mt-2" style="font-size:0.68rem; display:none;">Chưa đủ dữ liệu lịch sử — nạp data thêm vài ngày để thấy xu hướng.</div>
     </div>
 
@@ -306,7 +306,7 @@
   </div>
 
   <!-- ================= 2. BẢNG LŨY KẾ 18 NVBH ================= -->
-  <div id="sec-luyke" class="section-tab">
+  <div id="sec-luyke" class="section-tab active">
     <div class="section-title"><i class="fa-solid fa-table-list me-1"></i> 2. BẢNG LŨY KẾ DOANH SỐ &amp; TIẾN ĐỘ TỪNG NHÂN VIÊN (18 NVBH)</div>
 
     <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-calendar-check me-1"></i> Số Ngày Có Bán Hàng Trong Tháng</div>
@@ -515,7 +515,7 @@
           <option value="ALL">Tất cả USM</option>
         <option value="Khánh">Nguyễn Minh Khánh</option><option value="Điền">Lê Thanh Điền</option><option value="Phong">Lê Thanh Phong</option><option value="Nguyên">Nguyễn Văn Nguyên</option><option value="Oán">Huỳnh Công Oán</option></select>
       </div>
-      <div style="position:relative; height:260px;"><canvas id="kpiAsoChart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
+      <div style="position:relative; height:260px;"><canvas id="kpiAsoChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
     </div>
 
     <div class="text-muted mb-2" style="font-size: 0.7rem;"><i class="fa-solid fa-circle-info me-1"></i> ASO = số khách hàng thực mua trong nhóm KPI đó. Bảng dưới đây tự cuộn ngang trên điện thoại.</div>
@@ -1461,7 +1461,9 @@ function renderActiveDays(){
   const nvbhList = buildNvbhListByUsm();
   const cal = getCalendarModel();
   const dayNum = cal ? cal.daysPassed : 0; // số ngày bán hàng thực tế đã qua (đã trừ Chủ Nhật + ngày lễ)
-  const approved = RAW.filter(r=> norm(r.tt)===norm(APPROVED_STATUS) && r.ngay && (r.dt||0)>0);
+  const todayDay = cal ? cal.todayDay : 0;
+  const approved = RAW.filter(r=> norm(r.tt)===norm(APPROVED_STATUS) && r.ngay && (r.dt||0)>0
+    && Number(r.ngay.split('/')[0]) <= todayDay); // chỉ tính đến đúng ngày hôm nay, không tính ngày sau đó
   const daysByNvbh = {};
   approved.forEach(r=>{
     const nk = matchKey(r.nvbh);
@@ -1912,7 +1914,7 @@ function getCalendarModel(){
   const effectiveDays = sellingDays.length || 1;
   const daysPassed = sellingDays.filter(d=> d<=todayDay).length;
   const remainingDays = Math.max(effectiveDays - daysPassed, 0);
-  return { calendarDays, todayDay, sellingDays, effectiveDays, daysPassed, remainingDays, lm, ly };
+  return { calendarDays, todayDay, latestDataDay: ld, sellingDays, effectiveDays, daysPassed, remainingDays, lm, ly };
 }
 
 let runRateChartInstance = null;
@@ -1923,7 +1925,7 @@ function renderRunRateChart(){
   const totalTarget = Object.values(TARGETS.usm||{}).reduce((s,v)=>s+(v.Total||0),0);
   const cal = getCalendarModel();
   if(!cal) return;
-  const { calendarDays, todayDay, effectiveDays, remainingDays, lm } = cal;
+  const { calendarDays, todayDay, effectiveDays, remainingDays, lm, latestDataDay } = cal;
   document.getElementById('calendarDaysLabel').innerText = calendarDays;
   document.getElementById('currentDayInput').value = todayDay;
   document.getElementById('holidayDatesInput').value = HOLIDAY_DATES.join(',');
@@ -1963,7 +1965,8 @@ function renderRunRateChart(){
   const labels = [];
   const dayValues = [];
   const barColors = [];
-  for(let d=1; d<=todayDay; d++){
+  const chartUptoDay = Math.max(todayDay, latestDataDay); // luôn hiện đủ tới ngày mới nhất có data thật, không bị chặn ở "Đã bán hết ngày"
+  for(let d=1; d<=chartUptoDay; d++){
     labels.push(`${String(d).padStart(2,'0')}/${String(lm).padStart(2,'0')}`);
     const v = +(dailyTotals[d]||0).toFixed(1);
     dayValues.push(v);
@@ -1985,7 +1988,7 @@ function renderRunRateChart(){
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ labels:{ color:'#3d5a75', font:{size:9}, boxWidth:12 } } },
       scales:{
-        x:{ ticks:{ color:'#6b8299', font:{size:8}, maxRotation:0, autoSkip:true, maxTicksLimit:8 }, grid:{ display:false } },
+        x:{ ticks:{ color:'#6b8299', font:{size:7}, maxRotation:90, minRotation:90, autoSkip:false }, grid:{ display:false } },
         y:{ ticks:{ color:'#6b8299', font:{size:8} }, grid:{ color:'rgba(30,58,82,0.08)' } }
       }
     }
@@ -2381,7 +2384,7 @@ function renderHistoryChart(){
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ labels:{ color:'#3d5a75', font:{size:9}, boxWidth:12 } } },
       scales:{
-        x:{ ticks:{ color:'#6b8299', font:{size:8}, maxRotation:0, autoSkip:true, maxTicksLimit:8 }, grid:{ display:false } },
+        x:{ ticks:{ color:'#6b8299', font:{size:7}, maxRotation:90, minRotation:90, autoSkip:false }, grid:{ display:false } },
         y:{ ticks:{ color:'#6b8299', font:{size:8} }, grid:{ color:'rgba(30,58,82,0.08)' } }
       }
     }
