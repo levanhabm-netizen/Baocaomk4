@@ -1181,38 +1181,37 @@ function handleRawUpload(event){
     });
   }, 30);
 }
-// HÀM MỚI: Kéo ĐỒNG THỜI dữ liệu Bán Hàng & Báo Cáo Đi Tuyến (Nút số 6)
+// HÀM MỚI: Kéo ĐỒNG THỜI Bán Hàng (Nút 1) & Đi Tuyến (Nút 6)
 async function handleCloudSync() {
   const statusEl = document.getElementById('uploadStatus');
-  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu Bán Hàng & Đi Tuyến từ Google Sheets...';
+  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu Bán Hàng & Đi Tuyến...';
 
   try {
     const url = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
-    
     const response = await fetch(url);
     const data = await response.json();
 
     if (data.error) {
       alert('Lỗi từ Google Sheets: ' + data.error);
-      if(statusEl) statusEl.innerText = '❌ Lỗi tải dữ liệu';
       return;
     }
 
     const rawList = data.khachHangList || [];
-    const visitList = data.visitList || [];
+    // Tự động nhận diện dữ liệu Tuyến hay Đi Tuyến từ link trả về
+    const visitList = data.visitList || data.tuyenList || []; 
 
     if (rawList.length === 0 && visitList.length === 0) {
-      alert('Google Sheets hiện chưa có dữ liệu ở cả 2 Tab!');
-      if(statusEl) statusEl.innerText = '⚠️ Dữ liệu trống';
+      alert('Google Sheets hiện chưa có dữ liệu!');
       return;
     }
 
     // ==========================================
-    // 1. XỬ LÝ DATA BÁN HÀNG
+    // 1. NẠP DATA BÁN HÀNG (Thay thế Nút số 1)
     // ==========================================
     let countRaw = 0;
     if (rawList.length > 0) {
-      const wsRaw = XLSX.utils.aoa_to_sheet(rawList);
+      // Tự động nhận diện form dữ liệu 
+      const wsRaw = Array.isArray(rawList[0]) ? XLSX.utils.aoa_to_sheet(rawList) : XLSX.utils.json_to_sheet(rawList);
       const wbRaw = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbRaw, wsRaw, "Sheet1");
       
@@ -1225,18 +1224,17 @@ async function handleCloudSync() {
     }
 
     // ==========================================
-    // 2. XỬ LÝ DATA ĐI TUYẾN (Dành cho nút 6)
+    // 2. NẠP DATA ĐI TUYẾN (Thay thế Nút số 6)
     // ==========================================
     let countVisit = 0;
     if (visitList.length > 0) {
-      // Ép thẳng mảng thô thành sheet, không cần tìm dòng tiêu đề
-      const wsVisit = XLSX.utils.aoa_to_sheet(visitList);
+      const wsVisit = Array.isArray(visitList[0]) ? XLSX.utils.aoa_to_sheet(visitList) : XLSX.utils.json_to_sheet(visitList);
       const wbVisit = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbVisit, wsVisit, "Sheet1");
       
+      // GỌI CHUẨN VÀO HÀM "ĐI TUYẾN" CHỨ KHÔNG GỌI HÀM "MCP" NỮA
       const parsedVisit = parseVisitWorkbook(wbVisit);
       if (parsedVisit.length > 0) {
-        // Biến VISIT của anh thường là biến toàn cục
         if (typeof VISIT !== 'undefined') VISIT = parsedVisit; 
         localStorage.setItem('VISIT_KEY', JSON.stringify(parsedVisit));
         countVisit = parsedVisit.length;
@@ -1257,98 +1255,13 @@ async function handleCloudSync() {
     if(typeof applyGlobalFilter === 'function') applyGlobalFilter();
     
     if(statusEl) statusEl.innerText = '✅ Đã đồng bộ Data xong!';
-    alert(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} người\n- Data Bán Hàng: ${countRaw} dòng`);
+    alert(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} dòng\n- Data Bán Hàng: ${countRaw} dòng`);
 
   } catch (err) {
-    alert('Lỗi kết nối mạng: ' + err.message);
-    if(statusEl) statusEl.innerText = '❌ Lỗi kết nối mạng';
+    alert('Lỗi: ' + err.message);
+    if(statusEl) statusEl.innerText = '❌ Có lỗi xảy ra';
   }
-}
-// HÀM MỚI: Kéo ĐỒNG THỜI dữ liệu Bán Hàng & Tuyến từ Google Sheets
-async function handleCloudSync() {
-  const statusEl = document.getElementById('uploadStatus');
-  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu Bán Hàng & Tuyến từ Google Sheets...';
-
-  try {
-    // Link mới chứa cả 2 Tab dữ liệu
-    const url = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
-    
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.error) {
-      alert('Lỗi từ Google Sheets: ' + data.error);
-      if(statusEl) statusEl.innerText = '❌ Lỗi tải dữ liệu';
-      return;
-    }
-
-    const rawList = data.khachHangList || [];
-    const routeList = data.tuyenList || [];
-
-    if (rawList.length === 0 && routeList.length === 0) {
-      alert('Google Sheets hiện chưa có dữ liệu ở cả 2 Tab!');
-      if(statusEl) statusEl.innerText = '⚠️ Dữ liệu trống';
-      return;
-    }
-
-    // ==========================================
-    // 1. XỬ LÝ DATA BÁN HÀNG (Ép thành file ảo cho hàm parseRawWorkbook)
-    // ==========================================
-    let countRaw = 0;
-    if (rawList.length > 0) {
-      const wsRaw = XLSX.utils.json_to_sheet(rawList);
-      const wbRaw = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wbRaw, wsRaw, "Sheet1");
-      
-      const parsedRaw = parseRawWorkbook(wbRaw);
-      if (parsedRaw.length > 0) {
-        RAW = parsedRaw;
-        // Dùng RAW_KEY dạng chuỗi vì có thể biến RAW_KEY không được định nghĩa global ở đây
-        localStorage.setItem('RAW_KEY', JSON.stringify(rawToCompact(RAW)));
-        countRaw = parsedRaw.length;
-      }
-    }
-
-   // ==========================================
-    // 2. XỬ LÝ DATA TUYẾN (Ép thành file ảo cho hàm parseRouteWorkbook)
-    // ==========================================
-    let countRoute = 0;
-    if (routeList.length > 0) {
-      // THÊM { origin: "A2" } ĐỂ ĐẨY DỮ LIỆU XUỐNG DÒNG 2 CHO KHỚP VỚI HÀM CŨ
-      const wsRoute = XLSX.utils.json_to_sheet(routeList, { origin: "A2" });
-      const wbRoute = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wbRoute, wsRoute, "Danh sách tuyến");
-      
-      const parsedRoute = parseRouteWorkbook(wbRoute);
-      if (parsedRoute.length > 0) {
-        ROUTE = parsedRoute;
-        localStorage.setItem('ROUTE_KEY', JSON.stringify(ROUTE));
-        countRoute = parsedRoute.length;
-      }
-    }
-
-    // ==========================================
-    // 3. LƯU LỊCH SỬ & KÍCH HOẠT VẼ BẢNG
-    // ==========================================
-    let meta = {}; 
-    try { meta = JSON.parse(localStorage.getItem('META_KEY')||'{}'); } catch(e){}
-    if (countRaw > 0) meta.rawName = "Data_Cloud_BanHang"; 
-    if (countRoute > 0) meta.routeName = "Data_Cloud_Tuyen";
-    localStorage.setItem('META_KEY', JSON.stringify(meta));
-    
-    saveMeta(); 
-    rebuildDateOptions(); 
-    applyGlobalFilter();
-    
-    if(statusEl) statusEl.innerText = '✅ Đã đồng bộ Data xong!';
-    alert(`Đã nạp thành công từ Cloud:\n- Kế hoạch tuyến: ${countRoute} điểm bán\n- Data Bán Hàng: ${countRaw} dòng`);
-
-  } catch (err) {
-    alert('Lỗi kết nối mạng: ' + err.message);
-    if(statusEl) statusEl.innerText = '❌ Lỗi kết nối mạng';
-  }
-}
-function handleRouteUpload(event){
+}function handleRouteUpload(event){
   const file = event.target.files[0]; if(!file) return;
   readFileAsWorkbook(file, (err, wb)=>{
     if(err){ alert('Lỗi đọc file: '+err.message); return; }
