@@ -91,72 +91,66 @@
     <div class="fw-bold text-white mb-1" style="font-size: 0.78rem;"><i class="fa-solid fa-floppy-disk text-success me-1"></i> Bộ Nhớ Trình Duyệt: <span class="badge bg-success">Đã Lưu Vĩnh Viễn</span></div>
     <div class="text-muted mb-2" style="font-size: 0.66rem;" id="uploadStatus">Data BH: <span id="metaDataBh">mặc định</span> | KH/KPI: <span id="metaKhKpi">mặc định</span> | DM SN: <span id="metaDmSn">mặc định</span> | Chỉ Tiêu: <span id="metaChiTieu">mặc định</span> | Master SP: <span id="metaMaster">mặc định</span></div>
     
-    <details>
-      <summary class="btn btn-sm btn-outline-secondary fw-bold" style="cursor: pointer; border-radius: 20px; font-size: 0.75rem; list-style: none; padding: 5px 15px; margin-bottom: 5px;">
-        <i class="fa-solid fa-folder-open me-1"></i> Bấm để Ẩn / Hiện Menu Nạp Dữ Liệu
-      </summary>
-      <div class="d-flex flex-wrap mt-2" style="gap: 10px;">
-  
-  <!-- NÚT ĐỒNG BỘ HIỆN CHỄM CHỆ BÊN NGOÀI -->
-  <button class="btn btn-primary" onclick="handleCloudSync()">
-    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Đồng bộ từ Google Sheets
-  </button>
+    <div class="d-flex flex-wrap mt-2 align-items-start" style="gap: 10px;">
+      
+      <!-- NÚT ĐỒNG BỘ HIỆN CHỄM CHỆ BÊN NGOÀI -->
+      <button class="btn btn-primary" onclick="handleCloudSync()">
+        <i class="fa-solid fa-cloud-arrow-down me-1"></i> Đồng bộ từ Google Sheets
+      </button>
 
-  <!-- NÚT "..." ẨN CÁC MENU CŨ -->
-  <details>
-    <summary class="btn btn-outline-secondary" style="cursor: pointer; padding: 0.375rem 0.75rem;">
-      <i class="fa-solid fa-ellipsis"></i> Tùy chọn nạp file thủ công
-    </summary>
-    
-    <!-- CÁC NÚT CŨ NẰM TRONG KHUNG NÀY, BẤM VÀO MỚI XỔ RA -->
-    <div class="d-flex flex-wrap mt-2" style="border: 1px dashed #ccc; padding: 10px; border-radius: 5px; background: #f8f9fa; gap: 5px;">
-      
-      <button class="btn-upload-compact" onclick="document.getElementById('rawFileInput').click()">
-        <i class="fa-solid fa-cloud-arrow-up"></i> 1. Data Bán Hàng (hàng ngày)
-      </button>
-      <input type="file" id="rawFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRawUpload(event)">
-      
-      <button class="btn-upload-compact route" onclick="document.getElementById('routeFileInput').click()">
-        <i class="fa-solid fa-route"></i> 2. KH/KPI/Tuyến
-      </button>
-      <input type="file" id="routeFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRouteUpload(event)">
-      
-      <button class="btn-upload-compact sn" onclick="document.getElementById('snFileInput').click()">
-        <i class="fa-solid fa-list-check"></i> 3. Danh Mục SN
-      </button>
-      <input type="file" id="snFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleSnUpload(event)">
-      
-      <button class="btn-upload-compact target" onclick="document.getElementById('targetFileInput').click()">
-        <i class="fa-solid fa-bullseye"></i> 4. Chỉ Tiêu NVBH
-      </button>
-      <input type="file" id="targetFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleTargetUpload(event)">
-      
-      <button class="btn-upload-compact master" onclick="document.getElementById('masterFileInput').click()">
-        <i class="fa-solid fa-database"></i> 5. Master SP (KPI)
-      </button>
-      <input type="file" id="masterFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleMasterUpload(event)">
-      
-      <button class="btn-upload-compact visit" onclick="document.getElementById('visitFileInput').click()" style="background-color: #10b981;">
-        <i class="fa-solid fa-person-walking-arrow-right"></i> 6. Báo Cáo Đi Tuyến
-      </button>
-      <input type="file" id="visitFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleVisitUpload(event)">
+      <!-- NÚT "..." ẨN CÁC MENU CŨ -->
+      <details style="display: inline-block;">
+        <summary class="btn btn-outline-secondary btn-sm" style="cursor: pointer; list-style: none; padding: 0.375rem 0.75rem;" title="Tùy chọn nạp file thủ công">
+          <i class="fa-solid fa-ellipsis"></i>
+        </summary>
+        
+        <!-- CÁC NÚT CŨ NẰM TRONG KHUNG NÀY, BẤM VÀO MỚI XỔ RA -->
+        <div class="d-flex flex-wrap mt-2 position-absolute" style="border: 1px dashed #ccc; padding: 10px; border-radius: 5px; background: #f8f9fa; gap: 5px; z-index: 100; max-width: 90vw; left: 1rem;">
+          
+          <button class="btn-upload-compact" onclick="document.getElementById('rawFileInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> 1. Data Bán Hàng (hàng ngày)
+          </button>
+          <input type="file" id="rawFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRawUpload(event)">
+          
+          <button class="btn-upload-compact route" onclick="document.getElementById('routeFileInput').click()">
+            <i class="fa-solid fa-route"></i> 2. KH/KPI/Tuyến
+          </button>
+          <input type="file" id="routeFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRouteUpload(event)">
+          
+          <button class="btn-upload-compact sn" onclick="document.getElementById('snFileInput').click()">
+            <i class="fa-solid fa-list-check"></i> 3. Danh Mục SN
+          </button>
+          <input type="file" id="snFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleSnUpload(event)">
+          
+          <button class="btn-upload-compact target" onclick="document.getElementById('targetFileInput').click()">
+            <i class="fa-solid fa-bullseye"></i> 4. Chỉ Tiêu NVBH
+          </button>
+          <input type="file" id="targetFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleTargetUpload(event)">
+          
+          <button class="btn-upload-compact master" onclick="document.getElementById('masterFileInput').click()">
+            <i class="fa-solid fa-database"></i> 5. Master SP (KPI)
+          </button>
+          <input type="file" id="masterFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleMasterUpload(event)">
+          
+          <button class="btn-upload-compact visit" onclick="document.getElementById('visitFileInput').click()" style="background-color: #10b981;">
+            <i class="fa-solid fa-person-walking-arrow-right"></i> 6. Báo Cáo Đi Tuyến
+          </button>
+          <input type="file" id="visitFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleVisitUpload(event)">
 
-      <button class="btn-upload-compact ww" onclick="document.getElementById('wwFileInput').click()" style="background-color: #eab308; color: #422006;">
-        <i class="fa-solid fa-people-arrows"></i> 7. Báo Cáo WW/Huấn Luyện
-      </button>
-      <input type="file" id="wwFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleWwUpload(event)">
+          <button class="btn-upload-compact ww" onclick="document.getElementById('wwFileInput').click()" style="background-color: #eab308; color: #422006;">
+            <i class="fa-solid fa-people-arrows"></i> 7. Báo Cáo WW/Huấn Luyện
+          </button>
+          <input type="file" id="wwFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleWwUpload(event)">
+          
+        </div>
+      </details>
       
+      <!-- Nút Xuất File đưa ra ngoài cho tiện -->
+      <button class="btn-upload-compact export" onclick="exportCurrentFile()">
+        <i class="fa-solid fa-download"></i> Xuất File
+      </button>
+
     </div>
-  </details>
-
-</div>
-      
-      <div class="mt-2">
-        <button class="btn-upload-compact export" onclick="exportCurrentFile()">
-          <i class="fa-solid fa-download"></i> Xuất File HTML Kèm Data Hiện Tại (gửi cho máy khác)
-        </button>
-      </div>
-    </details>
   </div>
 <!-- Bộ lọc ngày & USM có tác động toàn bộ báo cáo -->
 <div class="card-box mx-2 p-2">
@@ -201,67 +195,15 @@
   <button onclick="switchTab('sec-tongquan')"><i class="fa-solid fa-chart-pie me-1"></i>1. Tổng quan</button>
   <button onclick="switchTab('sec-luyke')"><i class="fa-solid fa-table-list me-1"></i>2. Lũy Kế NVBH</button>
   <button onclick="switchTab('sec-kpi-tonghop')"><i class="fa-solid fa-layer-group me-1"></i>3. Trạm Phân Tích KPI</button>
+  <button onclick="switchTab('sec-banlai')"><i class="fa-solid fa-arrows-rotate me-1"></i>4. Bán Lại</button>
   <button onclick="switchTab('sec-kenh')"><i class="fa-solid fa-shop me-1"></i>5. Kênh</button>
   <button onclick="switchTab('sec-vip')"><i class="fa-solid fa-triangle-exclamation me-1"></i>6. Cảnh báo VIP</button>
   <button onclick="switchTab('sec-bancheo')"><i class="fa-solid fa-shuffle me-1"></i>7. Bán Chéo Sữa Nước</button>
-<!-- ================= 4. BÁN LẠI ================= -->
-  <div id="sec-banlai" class="section-tab">
-    <div class="section-title"><i class="fa-solid fa-arrows-rotate me-1"></i> 4. BÁN LẠI KHÁCH NGỦ ĐÔNG (3 THÁNG & THÁNG 8)</div>
-    <div class="fw-bold text-warning mb-1" style="font-size: 0.78rem;">➤ Tổng Quan Theo USM & Khu Vực</div>
-    <div class="card-box mb-3">
-      <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
-          <thead><tr><th>USM</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
-          <tbody id="banlaiUsmTbody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="fw-bold text-info mb-1" style="font-size: 0.78rem;">➤ Chi Tiết Theo Từng Nhân Viên</div>
-    <div class="card-box mb-3">
-      <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
-          <thead><tr><th>USM / Nhân Viên (NVBH)</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
-          <tbody id="banlaiTbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
-      <div class="fw-bold text-primary" style="font-size: 0.78rem;">➤ Danh Sách Khách Hàng (Đã Bán Lại / Chưa Bán Lại)</div>
-      <button class="btn btn-sm btn-danger fw-bold shadow-sm" onclick="locTuyenHomNayBanLai()" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;">
-        <i class="fa-solid fa-fire me-1"></i> ÉP SỐ TUYẾN HÔM NAY (<span id="btnThuLabel">...</span>)
-      </button>
-    </div>
-    
-    <div class="d-flex gap-2 mb-2 flex-wrap" style="font-size: 0.7rem;">
-      <select id="banlaiGroupFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Nhóm: Tất cả</option><option value="M3">Nhóm: 3 Tháng Chưa Mua</option><option value="T8">Nhóm: Tháng 8 Chưa Mua</option>
-      </select>
-      <select id="banlaiStatusFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Trạng thái: Tất cả</option><option value="DONE">✅ Đã Bán Lại</option><option value="PENDING">❌ Chưa Bán Lại</option>
-      </select>
-      <select id="banlaiThuFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Thứ: Tất cả</option><option value="2">Thứ 2</option><option value="3">Thứ 3</option><option value="4">Thứ 4</option><option value="5">Thứ 5</option><option value="6">Thứ 6</option><option value="7">Thứ 7</option><option value="CN">Chủ Nhật</option>
-      </select>
-    </div>
-    <div class="card-box">
-      <div class="table-responsive" style="max-height:62vh; overflow-y:auto;">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.66rem;">
-          <thead style="position:sticky; top:0; z-index:2;">
-            <tr><th>Mã KH</th><th>Khách Hàng</th><th>Kênh</th><th>USM / NVBH</th><th>Thứ</th><th>Nhóm</th><th>Trạng Thái</th><th>DS T08</th><th class="text-center">Hành Động</th></tr>
-          </thead>
-          <tbody id="banlaiListTbody"></tbody>
-        </table>
-      </div>
-      <button class="btn btn-sm btn-success mt-2" onclick="exportBanlaiExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
-    </div>
-  </div>
   <button onclick="switchTab('sec-khachhang')"><i class="fa-solid fa-users me-1"></i>9. DS Khách Hàng</button>
   <button onclick="switchTab('sec-tuyends')"><i class="fa-solid fa-route me-1"></i>10. Ghép Tuyến & DS</button>
   <button onclick="switchTab('sec-homnay')"><i class="fa-solid fa-bolt me-1"></i>11. Hôm Nay</button>
   <button onclick="switchTab('sec-asomoi')"><i class="fa-solid fa-star me-1"></i>12. ASO Mới</button>
 </div>
-
 <div class="container-fluid px-2 mt-2">
 
   <!-- ================= 1. TỔNG QUAN USM ================= -->
@@ -349,9 +291,14 @@
   <div id="sec-luyke" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-table-list me-1"></i> 2. BẢNG LŨY KẾ DOANH SỐ & TIẾN ĐỘ TỪNG NHÂN VIÊN (18 NVBH)</div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-calendar-check me-1"></i> Số Ngày Có Bán Hàng Trong Tháng</div>
-    <div class="text-muted mb-2" style="font-size: 0.66rem;">Số ngày NVBH có phát sinh ít nhất 1 đơn đã duyệt, trên tổng số <strong>ngày bán hàng thực tế đã qua</strong> (đã trừ Chủ Nhật + ngày lễ) — đo mức độ hoạt động đều đặn (không phải cứ có DS cao là đều đặn).</div>
-    <div class="card-box mb-3">
+    <div class="card-box mb-3" id="capture-luyke-ngay">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div>
+          <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-calendar-check me-1"></i> Số Ngày Có Bán Hàng Trong Tháng</div>
+          <div class="text-muted" style="font-size: 0.66rem;">Số ngày NVBH có phát sinh ít nhất 1 đơn đã duyệt...</div>
+        </div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-luyke-ngay', 'LuyKe_NgayBan')" style="font-size: 0.65rem; min-width: 90px;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
           <thead><tr><th>USM / NVBH</th><th>Ngày Có Bán</th><th>% Đều Đặn</th></tr></thead>
@@ -360,7 +307,11 @@
       </div>
     </div>
 
-    <div class="card-box">
+    <div class="card-box" id="capture-luyke-ds">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-dark" style="font-size: 0.78rem;">➤ CHI TIẾT DOANH SỐ & TIẾN ĐỘ</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-luyke-ds', 'LuyKe_ChiTiet')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM / NVBH</th><th>MCP</th><th>Active</th><th>Chỉ Tiêu (Tr)</th><th>Doanh Số (Tr)</th><th>%HT</th></tr></thead>
@@ -370,16 +321,15 @@
     </div>
   </div>
 
-
-
-  <!-- ================= 4. BÁN LẠI ================= -->
+ <!-- ================= 4. BÁN LẠI ================= -->
   <div id="sec-banlai" class="section-tab">
-   <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-      <div class="section-title mb-0 border-0 pb-0"><i class="fa-solid fa-arrows-rotate me-1"></i> 4. BÁN LẠI KHÁCH NGỦ ĐÔNG (3 THÁNG & THÁNG 8)</div>
-      <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('sec-banlai', 'BaoCao_BanLai')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Chụp Ảnh Mục Này</button>
-    </div>
-    <div class="fw-bold text-warning mb-1" style="font-size: 0.78rem;">➤ Tổng Quan Theo USM & Khu Vực</div>
-    <div class="card-box mb-3">
+    <div class="section-title"><i class="fa-solid fa-arrows-rotate me-1"></i> 4. BÁN LẠI KHÁCH NGỦ ĐÔNG (3 THÁNG & THÁNG 8)</div>
+    
+    <div class="card-box mb-3" id="capture-banlai-usm">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-warning" style="font-size: 0.78rem;">➤ Tổng Quan Theo USM & Khu Vực</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-banlai-usm', 'BanLai_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
@@ -387,8 +337,12 @@
         </table>
       </div>
     </div>
-    <div class="fw-bold text-info mb-1" style="font-size: 0.78rem;">➤ Chi Tiết Theo Từng Nhân Viên</div>
-    <div class="card-box mb-3">
+
+    <div class="card-box mb-3" id="capture-banlai-nvbh">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-info" style="font-size: 0.78rem;">➤ Chi Tiết Theo Từng Nhân Viên</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-banlai-nvbh', 'BanLai_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM / Nhân Viên (NVBH)</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
@@ -397,45 +351,42 @@
       </div>
     </div>
 
-    <div class="fw-bold text-primary mb-1" style="font-size: 0.78rem;">➤ Danh Sách Khách Hàng (Đã Bán Lại / Chưa Bán Lại)</div>
-    <div class="d-flex gap-2 mb-2 flex-wrap" style="font-size: 0.7rem;">
-      <select id="banlaiGroupFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Nhóm: Tất cả</option>
-        <option value="M3">Nhóm: 3 Tháng Chưa Mua</option>
-        <option value="T8">Nhóm: Tháng 8 Chưa Mua</option>
-      </select>
-      <select id="banlaiStatusFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Trạng thái: Tất cả</option>
-        <option value="DONE">✅ Đã Bán Lại</option>
-        <option value="PENDING">❌ Chưa Bán Lại</option>
-      </select>
-      <select id="banlaiThuFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()">
-        <option value="ALL">Thứ: Tất cả</option>
-        <option value="2">Thứ 2</option>
-        <option value="3">Thứ 3</option>
-        <option value="4">Thứ 4</option>
-        <option value="5">Thứ 5</option>
-        <option value="6">Thứ 6</option>
-        <option value="7">Thứ 7</option>
-        <option value="CN">Chủ Nhật</option>
-      </select>
+    <!-- NÚT ÉP SỐ TUYẾN ĐÃ ĐƯỢC KHÔI PHỤC ĐỂ CHỐNG LỖI -->
+    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+      <div class="fw-bold text-primary" style="font-size: 0.78rem;">➤ Danh Sách Khách Hàng (Đã Bán Lại / Chưa Bán Lại)</div>
+      <button class="btn btn-sm btn-danger fw-bold shadow-sm" onclick="locTuyenHomNayBanLai()" style="font-size: 0.68rem; border-radius: 20px; padding: 4px 12px;">
+        <i class="fa-solid fa-fire me-1"></i> ÉP SỐ TUYẾN HÔM NAY (<span id="btnThuLabel">-</span>)
+      </button>
     </div>
-    <div class="card-box">
+    
+    <div class="d-flex gap-2 mb-2 flex-wrap" style="font-size: 0.7rem;">
+      <select id="banlaiGroupFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Nhóm: Tất cả</option><option value="M3">Nhóm: 3 Tháng Chưa Mua</option><option value="T8">Nhóm: Tháng 8 Chưa Mua</option></select>
+      <select id="banlaiStatusFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Trạng thái: Tất cả</option><option value="DONE">✅ Đã Bán Lại</option><option value="PENDING">❌ Chưa Bán Lại</option></select>
+      <select id="banlaiThuFilter" class="form-select form-select-sm" style="width:auto; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Thứ: Tất cả</option><option value="2">Thứ 2</option><option value="3">Thứ 3</option><option value="4">Thứ 4</option><option value="5">Thứ 5</option><option value="6">Thứ 6</option><option value="7">Thứ 7</option><option value="CN">Chủ Nhật</option></select>
+    </div>
+    <div class="card-box" id="capture-banlai-list">
       <div class="table-responsive" style="max-height:62vh; overflow-y:auto;">
         <table class="table table-hover table-custom mb-0" style="font-size:0.66rem;">
           <thead style="position:sticky; top:0; z-index:2;"><tr><th>Mã KH</th><th>Khách Hàng</th><th>Kênh</th><th>USM / NVBH</th><th>Thứ</th><th>Nhóm</th><th>Trạng Thái</th><th>DS T08</th></tr></thead>
           <tbody id="banlaiListTbody"></tbody>
         </table>
       </div>
-      <button class="btn btn-sm btn-success mt-2" onclick="exportBanlaiExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-sm btn-success" onclick="exportBanlaiExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-banlai-list', 'BanLai_DSKH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
     </div>
-  </div>
+  </div> <!-- THẺ ĐÓNG QUAN TRỌNG NÀY ĐÃ ĐƯỢC THÊM VÀO -->
 
   <!-- ================= 5. KÊNH ================= -->
   <div id="sec-kenh" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-shop me-1"></i> 5. PHÂN TÍCH KÊNH KHÁCH HÀNG</div>
-    <div class="fw-bold text-warning mb-1" style="font-size: 0.78rem;">➤ Theo Từng USM</div>
-    <div class="card-box mb-3">
+    
+    <div class="card-box mb-3" id="capture-kenh-usm">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-warning" style="font-size: 0.78rem;">➤ Theo Từng USM</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-kenh-usm', 'Kenh_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM / Kênh</th><th>MCP</th><th>Active</th><th>DS T08 (Tr)</th><th>DS T09 (Tr)</th></tr></thead>
@@ -443,8 +394,12 @@
         </table>
       </div>
     </div>
-    <div class="fw-bold text-info mb-1" style="font-size: 0.78rem;">➤ Tổng Toàn Khu Vực BAMMK4</div>
-    <div class="card-box">
+
+    <div class="card-box" id="capture-kenh-tong">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-info" style="font-size: 0.78rem;">➤ Tổng Toàn Khu Vực BAMMK4</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-kenh-tong', 'Kenh_Tong')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>Kênh</th><th>MCP</th><th>Active</th><th>DS T08 (Tr)</th><th>DS T09 (Tr)</th><th id="kenhTodayHeader">Hôm Nay</th></tr></thead>
@@ -453,16 +408,17 @@
       </div>
     </div>
   </div>
-	
- <!-- ================= 6. VIP ================= -->
+
+  <!-- ================= 6. VIP ================= -->
   <div id="sec-vip" class="section-tab">
-    <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-      <div class="section-title mb-0 border-0 pb-0"><i class="fa-solid fa-triangle-exclamation me-1"></i> 6. CẢNH BÁO VIP T08 CHƯA MUA T09</div>
-      <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('sec-vip', 'BaoCao_VIP')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Chụp Ảnh Mục Này</button>
-    </div>
-    <div class="card-box mb-3" style="border-left: 4px solid var(--danger); background-color: #fff5f5;">
-      <div class="fw-bold text-danger mb-2" style="font-size: 0.8rem;">
-        <i class="fa-solid fa-fire me-1"></i> VIP TRÊN TUYẾN HÔM NAY (<span id="vipTodayThuLabel">-</span>) CHƯA LÊN ĐƠN
+    <div class="section-title"><i class="fa-solid fa-triangle-exclamation me-1"></i> 6. CẢNH BÁO VIP T08 CHƯA MUA T09</div>
+    
+    <div class="card-box mb-3" style="border-left: 4px solid var(--danger); background-color: #fff5f5;" id="capture-vip-homnay">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 border-danger">
+        <div class="fw-bold text-danger" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-fire me-1"></i> VIP TRÊN TUYẾN HÔM NAY (<span id="vipTodayThuLabel">-</span>) CHƯA LÊN ĐƠN
+        </div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-vip-homnay', 'VIP_HomNay')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
       </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
@@ -471,8 +427,12 @@
         </table>
       </div>
     </div>
-    <div class="fw-bold text-warning mb-1" style="font-size: 0.78rem;">➤ Danh sách chung (Các ngày khác)</div>
-    <div class="card-box">
+
+    <div class="card-box" id="capture-vip-tong">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-warning" style="font-size: 0.78rem;">➤ Danh sách chung (Các ngày khác)</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-vip-tong', 'VIP_Tong')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM / NVBH</th><th>Khách Hàng</th><th>Kênh</th><th>Thứ Đi Tuyến</th><th>DS T08 (Tr)</th></tr></thead>
@@ -485,39 +445,37 @@
   <!-- ================= 7. BÁN CHÉO SỮA NƯỚC (TRỪ HUỆ PHƯƠNG) ================= -->
   <div id="sec-bancheo" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-shuffle me-1"></i> 7. BÁO CÁO BÁN CHÉO SỮA NƯỚC (BAMMK4 - TRỪ NPP HUỆ PHƯƠNG)</div>
-    <div class="card-box border-primary">
-      <div class="text-info fw-bold mb-1" style="font-size: 0.8rem;"><i class="fa-solid fa-circle-info me-1"></i> Tiêu chí báo cáo:</div>
-      <p class="text-muted mb-2" style="font-size: 0.72rem;">
-        - Đối chiếu chuẩn danh mục sản phẩm Sữa Nước (SN) & Loại trừ NPP Huệ Phương.<br>
-        - Theo dõi chi tiết <strong>DS Bán chéo theo mốc thời gian đang chọn</strong> và <strong>Lũy kế bán chéo cả tháng</strong>.
-      </p>
-
-      <div class="fw-bold mb-1" style="font-size: 0.78rem; color: var(--gold);">➤ Tổng Quan Theo USM & Khu Vực</div>
-      <div class="table-responsive mb-3">
+    
+    <div class="card-box border-primary mb-3" id="capture-bancheo-usm">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div>
+          <div class="text-info fw-bold mb-1" style="font-size: 0.8rem;"><i class="fa-solid fa-circle-info me-1"></i> Tiêu chí báo cáo:</div>
+          <div class="text-muted" style="font-size: 0.72rem;">Đối chiếu chuẩn danh mục sản phẩm Sữa Nước (SN) & Loại trừ NPP Huệ Phương.</div>
+          <div class="fw-bold mt-2" style="font-size: 0.78rem; color: var(--gold);">➤ Tổng Quan Theo USM & Khu Vực</div>
+        </div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-bancheo-usm', 'BanCheo_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
+      <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
           <thead><tr><th>USM</th><th>MCP</th><th>DS Bán Chéo Kỳ Chọn (Tr)</th><th>Lũy Kế DS Bán Chéo (Tr)</th><th>ASO Bán Chéo (KH)</th></tr></thead>
           <tbody id="crossSellUsmTbody"></tbody>
         </table>
       </div>
+    </div>
 
-      <div class="fw-bold mb-1" style="font-size: 0.78rem; color: var(--info);">➤ Chi Tiết Theo Từng Nhân Viên</div>
+    <div class="card-box border-info" id="capture-bancheo-nvbh">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold" style="font-size: 0.78rem; color: var(--info);">➤ Chi Tiết Theo Từng Nhân Viên</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-bancheo-nvbh', 'BanCheo_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0">
-          <thead>
-            <tr>
-              <th>USM / Nhân Viên Sữa Bột</th>
-              <th>MCP</th>
-              <th>DS Bán Chéo Kỳ Chọn (Tr)</th>
-              <th>Lũy Kế DS Bán Chéo (Tr)</th>
-              <th>ASO Bán Chéo (KH)</th>
-            </tr>
-          </thead>
+          <thead><tr><th>USM / Nhân Viên Sữa Bột</th><th>MCP</th><th>DS Bán Chéo Kỳ Chọn (Tr)</th><th>Lũy Kế DS Bán Chéo (Tr)</th><th>ASO Bán Chéo (KH)</th></tr></thead>
           <tbody id="crossSellTbody"></tbody>
         </table>
       </div>
     </div>
   </div>
-
   <!-- ================= 3. TRẠM PHÂN TÍCH KPI TỔNG HỢP ================= -->
   <div id="sec-kpi-tonghop" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-layer-group me-1"></i> 3. TRẠM PHÂN TÍCH 6 KPI TRỌNG TÂM (ASO & DOANH SỐ)</div>
@@ -706,12 +664,16 @@
     </div>
   </div>
 
-  <!-- ================= 10. GHÉP TUYẾN & DOANH SỐ ================= -->
+ <!-- ================= 10. GHÉP TUYẾN & DOANH SỐ ================= -->
   <div id="sec-tuyends" class="section-tab">
     <div class="section-title"><i class="fa-solid fa-route me-1"></i> 10. GHÉP ĐI TUYẾN & DOANH SỐ (CHẤT LƯỢNG GHÉ THĂM)</div>
-    <div class="text-muted mb-2" style="font-size: 0.68rem;"><i class="fa-solid fa-circle-info me-1"></i> Cần nạp file "6. Báo Cáo Đi Tuyến" ở trên. So % Ghé Thăm Đủ (đã ghé / phải ghé) và % Ra Đơn (có đơn / đã ghé) với %HT Doanh Số của NVBH để biết vấn đề nằm ở đâu.</div>
-    <div id="tuyenDsEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu Báo Cáo Đi Tuyến. Anh nạp file ở nút "6. Báo Cáo Đi Tuyến" phía trên nhé.</div>
+    
     <div class="card-box mb-3" id="tuyenDsBox">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="text-muted" style="font-size: 0.68rem;"><i class="fa-solid fa-circle-info me-1"></i> So % Ghé Thăm Đủ và % Ra Đơn với %HT Doanh Số của NVBH.</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('tuyenDsBox', 'GhepTuyen_DS')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
+      <div id="tuyenDsEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu Báo Cáo Đi Tuyến. Anh nạp file ở nút "6. Báo Cáo Đi Tuyến" phía trên nhé.</div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size: 0.66rem;">
           <thead><tr><th>USM / NVBH</th><th>% Ghé Thăm Đủ</th><th>% Ra Đơn</th><th>%HT Doanh Số</th><th>Nhận Định</th></tr></thead>
@@ -720,10 +682,14 @@
       </div>
     </div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#c084fc;"><i class="fa-solid fa-people-arrows me-1"></i> HOẠT ĐỘNG WW & FIELDWORK CỦA GIÁM SÁT (LŨY KẾ THÁNG)</div>
-    <div class="text-muted mb-2" style="font-size: 0.66rem;">Nạp file "7. Báo Cáo WW/Huấn Luyện" mỗi ngày — hệ thống tự cộng dồn, không ghi đè. W*W = đi cùng NVBH, Fieldwork = giám sát tự đi tuyến riêng.</div>
-    <div id="wwEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu WW. Anh nạp file ở nút "7. Báo Cáo WW/Huấn Luyện" phía trên nhé.</div>
     <div class="card-box mb-3" id="wwUsmBox">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div>
+          <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#c084fc;"><i class="fa-solid fa-people-arrows me-1"></i> HOẠT ĐỘNG WW & FIELDWORK (LŨY KẾ)</div>
+        </div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('wwUsmBox', 'WW_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
+      <div id="wwEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu WW. Anh nạp file ở nút "7. Báo Cáo WW/Huấn Luyện" phía trên nhé.</div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
           <thead><tr><th>USM</th><th>Số KH Ghé WW</th><th>Số KH Fieldwork</th><th>NVBH Đã Đi Cùng</th></tr></thead>
@@ -732,8 +698,11 @@
       </div>
     </div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;">➤ NVBH Đã/Chưa Được WW Cùng</div>
     <div class="card-box" id="wwNvbhBox">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold" style="font-size: 0.78rem; color:#38bdf8;">➤ NVBH Đã/Chưa Được WW Cùng</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('wwNvbhBox', 'WW_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
           <thead><tr><th>USM / NVBH</th><th>Đã WW?</th><th>Lần Gần Nhất</th></tr></thead>
@@ -743,17 +712,20 @@
     </div>
   </div>
 
-  <!-- ================= 11. HÔM NAY (ASO + DOANH SỐ, TÍNH ĐỦ MỌI TRẠNG THÁI TRỪ TỪ CHỐI) ================= -->
+  <!-- ================= 11. HÔM NAY (ASO + DOANH SỐ) ================= -->
   <div id="sec-homnay" class="section-tab">
-<div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-  <div class="section-title mb-0 border-0 pb-0"><i class="fa-solid fa-bolt me-1"></i> 11. HÔM NAY — ASO & DOANH SỐ THEO KPI (NHÂN VIÊN ĐÃ LÀM GÌ)</div>
-  <div>
-    <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="exportTableToExcel('ID_BANG_11', 'BaoCao_HomNay')" style="font-size: 0.65rem;"><i class="fa-solid fa-file-excel"></i> Excel</button>
-    <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('sec-homnay', 'BaoCao_HomNay')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
-  </div>
-</div>
+    <div class="section-title"><i class="fa-solid fa-bolt me-1"></i> 11. HÔM NAY — ASO & DOANH SỐ THEO KPI (NHÂN VIÊN ĐÃ LÀM GÌ)</div>
     <div class="text-muted mb-2" style="font-size: 0.7rem;"><i class="fa-solid fa-circle-info me-1"></i> Lấy theo ngày đang chọn ở bộ lọc đầu trang (nếu chọn 1 ngày cụ thể) — nếu đang để "Lũy Kế Toàn Kỳ" thì lấy ngày mới nhất (<span id="homnayDateLabel">-</span>). Tính đủ các trạng thái: Chưa duyệt, Chờ xác nhận, Đã xác nhận, Đã duyệt (không tính Từ chối). Khác với các Mục khác chỉ tính đơn Đã duyệt.</div>
-    <div class="card-box mb-3">
+    
+    <!-- KHUNG BẢNG 1: DOANH SỐ HÔM NAY -->
+    <div class="card-box mb-3" id="capture-homnay-ds">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold text-warning text-dark" style="font-size: 0.78rem;">➤ BẢNG DOANH SỐ HÔM NAY</div>
+        <div>
+          <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="exportHomnayExcel()" style="font-size: 0.65rem;"><i class="fa-solid fa-file-excel"></i> Excel</button>
+          <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-homnay-ds', 'HomNay_DoanhSo')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.62rem;">
           <thead>
@@ -763,12 +735,15 @@
           <tbody id="homnayTbody"></tbody>
         </table>
       </div>
-      <button class="btn btn-sm btn-success mt-2" onclick="exportHomnayExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
     </div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-person-walking-arrow-right me-1"></i> VIẾNG THĂM HÔM NAY (TỪ BÁO CÁO ĐI TUYẾN)</div>
-    <div id="homnayVisitEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu Báo Cáo Đi Tuyến. Anh nạp file ở nút "6. Báo Cáo Đi Tuyến" phía trên nhé.</div>
+    <!-- KHUNG BẢNG 2: VIẾNG THĂM HÔM NAY -->
     <div class="card-box" id="homnayVisitBox">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-person-walking-arrow-right me-1"></i> VIẾNG THĂM HÔM NAY (TỪ BÁO CÁO ĐI TUYẾN)</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('homnayVisitBox', 'HomNay_Visit')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
+      <div id="homnayVisitEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu Báo Cáo Đi Tuyến. Anh nạp file ở nút "6. Báo Cáo Đi Tuyến" phía trên nhé.</div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.66rem;">
           <thead><tr><th>USM / NVBH</th><th>Phải Ghé</th><th>Đã Ghé</th><th>Có Đơn</th><th>Không Đơn</th><th>% Ghé Đủ</th></tr></thead>
@@ -777,20 +752,20 @@
       </div>
     </div>
   </div>
-
   <!-- ================= 12. ASO MỚI TRONG NGÀY ================= -->
   <div id="sec-asomoi" class="section-tab">
-<div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-  <div class="section-title mb-0 border-0 pb-0"><i class="fa-solid fa-star me-1"></i> 12. ASO MỚI TRONG NGÀY (KH ĐẦU THÁNG CHƯA BÁN ĐƯỢC, HÔM NAY BÁN ĐƯỢC)</div>
-  <div>
-    <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="exportTableToExcel('ID_BANG_12', 'BaoCao_ASO_Moi')" style="font-size: 0.65rem;"><i class="fa-solid fa-file-excel"></i> Excel</button>
-    <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('sec-asomoi', 'BaoCao_ASO_Moi')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
-  </div>
-</div>v>
+    <div class="section-title"><i class="fa-solid fa-star me-1"></i> 12. ASO MỚI TRONG NGÀY (KH ĐẦU THÁNG CHƯA BÁN ĐƯỢC, HÔM NAY BÁN ĐƯỢC)</div>
     <div class="text-muted mb-2" style="font-size:0.7rem;"><i class="fa-solid fa-circle-info me-1"></i> "Hôm nay" luôn lấy ngày mới nhất có phát sinh trong data (<span id="asoMoiDateLabel">-</span>). ASO Mới = khách hàng đạt ASO (≥200k) lần đầu trong tháng đúng vào ngày này (trước đó trong tháng chưa từng đạt ASO ở nhóm/tổng tương ứng). Tính đủ trạng thái trừ Từ chối, loại kênh GTPH.</div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-layer-group me-1"></i> BẢNG 1: TỔNG THEO USM / KHU VỰC</div>
-    <div class="card-box mb-3">
+    <!-- KHUNG BẢNG 1: TỔNG THEO USM -->
+    <div class="card-box mb-3" id="capture-asomoi-usm">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-layer-group me-1"></i> BẢNG 1: TỔNG THEO USM / KHU VỰC</div>
+        <div>
+          <button class="btn btn-sm btn-success fw-bold shadow-sm me-1" onclick="exportAsoMoiExcel()" style="font-size: 0.65rem;"><i class="fa-solid fa-file-excel"></i> Excel</button>
+          <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-asomoi-usm', 'ASOMoi_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
           <thead>
@@ -799,11 +774,14 @@
           <tbody id="asoMoiUsmTbody"></tbody>
         </table>
       </div>
-      <button class="btn btn-sm btn-success mt-2" onclick="exportAsoMoiExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
     </div>
 
-    <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-users me-1"></i> BẢNG 2: CHI TIẾT NVBH THEO USM</div>
-    <div class="card-box mb-3">
+    <!-- KHUNG BẢNG 2: CHI TIẾT NVBH -->
+    <div class="card-box mb-3" id="capture-asomoi-nvbh">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div class="fw-bold" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-users me-1"></i> BẢNG 2: CHI TIẾT NVBH THEO USM</div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-asomoi-nvbh', 'ASOMoi_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh Bảng Này</button>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
           <thead>
@@ -814,8 +792,6 @@
       </div>
     </div>
   </div>
-
-</div>
 
 <script>
 const RAW_KEY='BAMMK4_RAW_V1';
@@ -3490,6 +3466,18 @@ function renderVipKhachHang(danhSachVip, routeMap) {
   if(document.getElementById('vipTodayTbody')) document.getElementById('vipTodayTbody').innerHTML = htmlToday;
   if(document.getElementById('vipTbody')) document.getElementById('vipTbody').innerHTML = htmlOthers;
 }
+// ==========================================
+// TỰ ĐỘNG ĐỒNG BỘ DATA KHI CÓ NGƯỜI MỞ LINK
+// ==========================================
+window.addEventListener('DOMContentLoaded', (event) => {
+  // Chỉ tự động đồng bộ nếu người dùng đang xem online
+  if (navigator.onLine) {
+    // Độ trễ 1 giây để giao diện HTML tải xong phần khung trước
+    setTimeout(() => {
+      handleCloudSync();
+    }, 1000); 
+  }
+});
 </script>
 </body>
 </html>
