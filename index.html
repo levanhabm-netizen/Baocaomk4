@@ -95,46 +95,61 @@
       <summary class="btn btn-sm btn-outline-secondary fw-bold" style="cursor: pointer; border-radius: 20px; font-size: 0.75rem; list-style: none; padding: 5px 15px; margin-bottom: 5px;">
         <i class="fa-solid fa-folder-open me-1"></i> Bấm để Ẩn / Hiện Menu Nạp Dữ Liệu
       </summary>
-      
-      <div class="d-flex flex-wrap mt-2">
-        <button class="btn-upload-compact" onclick="document.getElementById('rawFileInput').click()">
-          <i class="fa-solid fa-cloud-arrow-up"></i> 1. Data Bán Hàng (hàng ngày)
-        </button>
-        <input type="file" id="rawFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRawUpload(event)">
-	<button class="btn btn-primary" onclick="handleCloudSync()">
-	<i class="fa-solid fa-cloud-arrow-down me-1"></i> Đồng bộ từ Google Sheets
-	</button>
-        
-        <button class="btn-upload-compact route" onclick="document.getElementById('routeFileInput').click()">
-          <i class="fa-solid fa-route"></i> 2. KH/KPI/Tuyến
-        </button>
-        <input type="file" id="routeFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRouteUpload(event)">
-        
-        <button class="btn-upload-compact sn" onclick="document.getElementById('snFileInput').click()">
-          <i class="fa-solid fa-list-check"></i> 3. Danh Mục SN
-        </button>
-        <input type="file" id="snFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleSnUpload(event)">
-        
-        <button class="btn-upload-compact target" onclick="document.getElementById('targetFileInput').click()">
-          <i class="fa-solid fa-bullseye"></i> 4. Chỉ Tiêu NVBH
-        </button>
-        <input type="file" id="targetFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleTargetUpload(event)">
-        
-        <button class="btn-upload-compact master" onclick="document.getElementById('masterFileInput').click()">
-          <i class="fa-solid fa-database"></i> 5. Master SP (KPI)
-        </button>
-        <input type="file" id="masterFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleMasterUpload(event)">
-        
-        <button class="btn-upload-compact visit" onclick="document.getElementById('visitFileInput').click()" style="background-color: #10b981;">
-          <i class="fa-solid fa-person-walking-arrow-right"></i> 6. Báo Cáo Đi Tuyến
-        </button>
-        <input type="file" id="visitFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleVisitUpload(event)">
+      <div class="d-flex flex-wrap mt-2" style="gap: 10px;">
+  
+  <!-- NÚT ĐỒNG BỘ HIỆN CHỄM CHỆ BÊN NGOÀI -->
+  <button class="btn btn-primary" onclick="handleCloudSync()">
+    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Đồng bộ từ Google Sheets
+  </button>
 
-        <button class="btn-upload-compact ww" onclick="document.getElementById('wwFileInput').click()" style="background-color: #eab308; color: #422006;">
-          <i class="fa-solid fa-people-arrows"></i> 7. Báo Cáo WW/Huấn Luyện
-        </button>
-        <input type="file" id="wwFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleWwUpload(event)">
-      </div>
+  <!-- NÚT "..." ẨN CÁC MENU CŨ -->
+  <details>
+    <summary class="btn btn-outline-secondary" style="cursor: pointer; padding: 0.375rem 0.75rem;">
+      <i class="fa-solid fa-ellipsis"></i> Tùy chọn nạp file thủ công
+    </summary>
+    
+    <!-- CÁC NÚT CŨ NẰM TRONG KHUNG NÀY, BẤM VÀO MỚI XỔ RA -->
+    <div class="d-flex flex-wrap mt-2" style="border: 1px dashed #ccc; padding: 10px; border-radius: 5px; background: #f8f9fa; gap: 5px;">
+      
+      <button class="btn-upload-compact" onclick="document.getElementById('rawFileInput').click()">
+        <i class="fa-solid fa-cloud-arrow-up"></i> 1. Data Bán Hàng (hàng ngày)
+      </button>
+      <input type="file" id="rawFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRawUpload(event)">
+      
+      <button class="btn-upload-compact route" onclick="document.getElementById('routeFileInput').click()">
+        <i class="fa-solid fa-route"></i> 2. KH/KPI/Tuyến
+      </button>
+      <input type="file" id="routeFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleRouteUpload(event)">
+      
+      <button class="btn-upload-compact sn" onclick="document.getElementById('snFileInput').click()">
+        <i class="fa-solid fa-list-check"></i> 3. Danh Mục SN
+      </button>
+      <input type="file" id="snFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleSnUpload(event)">
+      
+      <button class="btn-upload-compact target" onclick="document.getElementById('targetFileInput').click()">
+        <i class="fa-solid fa-bullseye"></i> 4. Chỉ Tiêu NVBH
+      </button>
+      <input type="file" id="targetFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleTargetUpload(event)">
+      
+      <button class="btn-upload-compact master" onclick="document.getElementById('masterFileInput').click()">
+        <i class="fa-solid fa-database"></i> 5. Master SP (KPI)
+      </button>
+      <input type="file" id="masterFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleMasterUpload(event)">
+      
+      <button class="btn-upload-compact visit" onclick="document.getElementById('visitFileInput').click()" style="background-color: #10b981;">
+        <i class="fa-solid fa-person-walking-arrow-right"></i> 6. Báo Cáo Đi Tuyến
+      </button>
+      <input type="file" id="visitFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleVisitUpload(event)">
+
+      <button class="btn-upload-compact ww" onclick="document.getElementById('wwFileInput').click()" style="background-color: #eab308; color: #422006;">
+        <i class="fa-solid fa-people-arrows"></i> 7. Báo Cáo WW/Huấn Luyện
+      </button>
+      <input type="file" id="wwFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleWwUpload(event)">
+      
+    </div>
+  </details>
+
+</div>
       
       <div class="mt-2">
         <button class="btn-upload-compact export" onclick="exportCurrentFile()">
@@ -1166,13 +1181,13 @@ function handleRawUpload(event){
     });
   }, 30);
 }
-// HÀM MỚI: Kéo dữ liệu tự động từ Google Sheets
+// HÀM MỚI: Kéo ĐỒNG THỜI dữ liệu Bán Hàng & Báo Cáo Đi Tuyến (Nút số 6)
 async function handleCloudSync() {
   const statusEl = document.getElementById('uploadStatus');
-  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu từ Google Sheets (có thể mất vài giây)...';
+  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu Bán Hàng & Đi Tuyến từ Google Sheets...';
 
   try {
-    const url = 'https://script.google.com/macros/s/AKfycbxf1N5YyAf7wy_XZv_WVBz54xo1YK-4g4YxE-9qKAksGRvpkxOnCJfnpjVoF4NQyyI_sg/exec';
+    const url = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
     
     const response = await fetch(url);
     const data = await response.json();
@@ -1183,40 +1198,66 @@ async function handleCloudSync() {
       return;
     }
 
-    const rawList = data.khachHangList;
-    if (!rawList || rawList.length === 0) {
-      alert('Google Sheets hiện chưa có dữ liệu!');
+    const rawList = data.khachHangList || [];
+    const visitList = data.visitList || [];
+
+    if (rawList.length === 0 && visitList.length === 0) {
+      alert('Google Sheets hiện chưa có dữ liệu ở cả 2 Tab!');
       if(statusEl) statusEl.innerText = '⚠️ Dữ liệu trống';
       return;
     }
 
-    // Tạo file Excel ảo để tái sử dụng hàm xử lý cũ
-    const ws = XLSX.utils.json_to_sheet(rawList);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
-    const parsed = parseRawWorkbook(wb);
-    if(parsed.length === 0){ 
-      alert('Không tìm thấy dòng dữ liệu hợp lệ (kiểm tra cột Tên ASM = "Lê Văn Hà")'); 
-      saveMeta(); 
-      return; 
+    // ==========================================
+    // 1. XỬ LÝ DATA BÁN HÀNG
+    // ==========================================
+    let countRaw = 0;
+    if (rawList.length > 0) {
+      const wsRaw = XLSX.utils.aoa_to_sheet(rawList);
+      const wbRaw = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wbRaw, wsRaw, "Sheet1");
+      
+      const parsedRaw = parseRawWorkbook(wbRaw);
+      if (parsedRaw.length > 0) {
+        RAW = parsedRaw;
+        localStorage.setItem('RAW_KEY', JSON.stringify(rawToCompact(RAW)));
+        countRaw = parsedRaw.length;
+      }
     }
-    
-    // Lưu dữ liệu vào hệ thống
-    RAW = parsed;
-    localStorage.setItem('RAW_KEY', JSON.stringify(rawToCompact(RAW)));
-    
+
+    // ==========================================
+    // 2. XỬ LÝ DATA ĐI TUYẾN (Dành cho nút 6)
+    // ==========================================
+    let countVisit = 0;
+    if (visitList.length > 0) {
+      // Ép thẳng mảng thô thành sheet, không cần tìm dòng tiêu đề
+      const wsVisit = XLSX.utils.aoa_to_sheet(visitList);
+      const wbVisit = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wbVisit, wsVisit, "Sheet1");
+      
+      const parsedVisit = parseVisitWorkbook(wbVisit);
+      if (parsedVisit.length > 0) {
+        // Biến VISIT của anh thường là biến toàn cục
+        if (typeof VISIT !== 'undefined') VISIT = parsedVisit; 
+        localStorage.setItem('VISIT_KEY', JSON.stringify(parsedVisit));
+        countVisit = parsedVisit.length;
+      }
+    }
+
+    // ==========================================
+    // 3. LƯU LỊCH SỬ & KÍCH HOẠT VẼ BẢNG
+    // ==========================================
     let meta = {}; 
     try { meta = JSON.parse(localStorage.getItem('META_KEY')||'{}'); } catch(e){}
-    meta.rawName = "Data_Cloud_GoogleSheets"; 
+    if (countRaw > 0) meta.rawName = "Data_Cloud_BanHang"; 
+    if (countVisit > 0) meta.visitName = "Data_Cloud_DiTuyen";
     localStorage.setItem('META_KEY', JSON.stringify(meta));
     
     saveMeta(); 
-    rebuildDateOptions(); 
-    applyGlobalFilter();
+    if(typeof rebuildDateOptions === 'function') rebuildDateOptions(); 
+    if(typeof applyGlobalFilter === 'function') applyGlobalFilter();
     
     if(statusEl) statusEl.innerText = '✅ Đã đồng bộ Data xong!';
-    alert('Đã nạp thành công Data Bán Hàng từ Cloud: ' + parsed.length + ' dòng (ASM Lê Văn Hà).');
+    alert(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} người\n- Data Bán Hàng: ${countRaw} dòng`);
 
   } catch (err) {
     alert('Lỗi kết nối mạng: ' + err.message);
@@ -1268,14 +1309,14 @@ async function handleCloudSync() {
       }
     }
 
-    // ==========================================
+   // ==========================================
     // 2. XỬ LÝ DATA TUYẾN (Ép thành file ảo cho hàm parseRouteWorkbook)
     // ==========================================
     let countRoute = 0;
     if (routeList.length > 0) {
-      const wsRoute = XLSX.utils.json_to_sheet(routeList);
+      // THÊM { origin: "A2" } ĐỂ ĐẨY DỮ LIỆU XUỐNG DÒNG 2 CHO KHỚP VỚI HÀM CŨ
+      const wsRoute = XLSX.utils.json_to_sheet(routeList, { origin: "A2" });
       const wbRoute = XLSX.utils.book_new();
-      // Bắt buộc đặt tên sheet ảo này là "Danh sách tuyến" để hàm cũ nhận diện được
       XLSX.utils.book_append_sheet(wbRoute, wsRoute, "Danh sách tuyến");
       
       const parsedRoute = parseRouteWorkbook(wbRoute);
