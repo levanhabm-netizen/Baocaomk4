@@ -3837,17 +3837,19 @@ async function pushToGoogleSheets() {
   };
 
   try {
-    let payload = {};
+    let payload = { token: "MK4_tk_7f3a91c2e8b5" };
     if (file1) payload.rawList = await readExcel(file1);
     if (file2) payload.visitList = await readExcel(file2);
 
     const url = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
     
-    await fetch(url, {
+    const _r = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     });
+    const _t = (await _r.text()).trim();
+    if (_t !== "SUCCESS") throw new Error(_t.slice(0, 120));
 
     alert("✅ Bắn dữ liệu lên máy chủ thành công! Giờ anh và mọi người có thể bấm 'Đồng bộ' để tải số mới.");
     if (statusEl) statusEl.innerText = "✅ Máy chủ đã nhận Data mới!";
