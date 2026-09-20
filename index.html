@@ -127,6 +127,11 @@
   .table-custom tr.usm-head td:first-child { border-left: 3px solid #f5b942 !important; }
   .table-custom .table-secondary td { background-color: #fbe6b5 !important; color: #4a2f08 !important; border-top: 1px solid #e8c56a !important; font-weight: 700; }
   .table-custom .table-success td { background-color: #e4f5e9 !important; color: #14532d !important; font-weight: 700; }
+  /* Bảng nhiều cột: ép vừa màn hình điện thoại */
+  .tbl-tight { font-size: 0.64rem; }
+  .table-custom.tbl-tight td:first-child:not([colspan]), .table-custom.tbl-tight thead tr:first-child th:first-child { min-width: 56px; max-width: 80px; }
+  .tbl-tight th, .tbl-tight td { padding-left: 1px !important; padding-right: 1px !important; }
+  .tbl-tight td span[style*="min-width:52px"] { min-width: 0 !important; padding: 2px 4px !important; font-size: 0.62rem !important; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -319,29 +324,14 @@
   <!-- ================= 2. BẢNG LŨY KẾ 18 NVBH ================= -->
   <div id="sec-luyke" class="section-tab">
 
-    <div class="card-box mb-3" id="capture-luyke-ngay">
-      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-        <div>
-          <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-calendar-check me-1"></i> Ngày có bán hàng</div>
-        </div>
-        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-luyke-ngay', 'LuyKe_NgayBan')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
-          <thead><tr><th>USM / NVBH</th><th>Ngày Có Bán</th><th>% Đều Đặn</th></tr></thead>
-          <tbody id="activeDaysTbody"></tbody>
-        </table>
-      </div>
-    </div>
-
     <div class="card-box" id="capture-luyke-ds">
       <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
         <div class="fw-bold text-dark" style="font-size: 0.78rem;">➤ CHI TIẾT DOANH SỐ & TIẾN ĐỘ</div>
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-luyke-ds', 'LuyKe_ChiTiet')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" data-gs="1,3">
-          <thead><tr><th>USM / NVBH</th><th>MCP</th><th>Active</th><th>CT (Tr)</th><th>DS (Tr)</th><th>%HT</th></tr></thead>
+        <table class="table table-hover table-custom tbl-tight mb-0" data-gs="1,4,7">
+          <thead><tr><th>USM / NVBH</th><th>MCP</th><th>Active</th><th>%BP</th><th>CT (Tr)</th><th>DS (Tr)</th><th>%HT</th><th>BQ/Ngày (Tr)</th></tr></thead>
           <tbody id="nvbhTableBody"></tbody>
         </table>
       </div>
@@ -684,6 +674,21 @@
         <table class="table table-hover table-custom mb-0" style="font-size: 0.66rem;" data-gs="1,4">
           <thead><tr><th>USM / NVBH</th><th>% Ghé đủ</th><th>% Ra Đơn</th><th>%HT Doanh Số</th><th>Nhận Định</th></tr></thead>
           <tbody id="tuyenDsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-box mb-3" id="capture-tuyen-ngay">
+      <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+        <div>
+          <div class="fw-bold mb-1" style="font-size: 0.78rem; color:#38bdf8;"><i class="fa-solid fa-calendar-check me-1"></i> Ngày có bán hàng</div>
+        </div>
+        <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-tuyen-ngay', 'Tuyen_NgayBan')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
+          <thead><tr><th>USM / NVBH</th><th>Ngày Có Bán</th><th>% Đều Đặn</th></tr></thead>
+          <tbody id="activeDaysTbody"></tbody>
         </table>
       </div>
     </div>
@@ -1848,6 +1853,11 @@ function renderNvbh(agg){
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
   const nvbhList = buildNvbhListByUsm(true);
   const expectedPct = getPacePct();
+  const cal = getCalendarModel();
+  const remDays = cal ? cal.remainingDays : 0;
+  // %BP = Active / MCP ; BQ/Ngày = (Chỉ tiêu - DS đã đạt) / số ngày còn lại
+  const bp = (a,m)=> m ? fmt1(a/m*100)+'%' : '-';
+  const bq = (t,d)=>{ if(!t) return '-'; const rest = t - d; if(rest<=0) return '✓'; return remDays>0 ? fmt1(rest/remDays) : '-'; };
   let html='';
   let totMcp=0, totActive=0, totTarget=0, totDs=0;
   const totSet = new Set();
@@ -1863,15 +1873,15 @@ function renderNvbh(agg){
       totMcp+=mcp; totTarget+=item.target||0; totDs+=ds;
       usmMcp+=mcp; usmTarget+=item.target||0; usmDs+=ds;
       (agg.activeSetByNvbh[item.key]||new Set()).forEach(m=>{ usmSet.add(m); totSet.add(m); });
-      html += `<tr class="nv-item-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-center">${fmt0(active)}</td><td class="text-end">${fmt1(item.target)}</td><td class="text-end text-primary fw-bold">${fmt1(ds)}</td><td class="text-center">${heatBadge(pct, item.target?expectedPct:0)}</td></tr>`;
+      html += `<tr class="nv-item-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-center">${fmt0(active)}</td><td class="text-center">${bp(active,mcp)}</td><td class="text-end">${fmt1(item.target)}</td><td class="text-end text-primary fw-bold">${fmt1(ds)}</td><td class="text-center">${heatBadge(pct, item.target?expectedPct:0)}</td><td class="text-end">${bq(item.target,ds)}</td></tr>`;
     });
     usmActive = usmSet.size;
     const usmPct = usmTarget? usmDs/usmTarget*100:0;
-    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs)}</td><td class="text-center fw-bold">${fmt1(usmPct)}%</td></tr>` + html.slice(_hi);
+    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmActive)}</td><td class="text-center fw-bold">${bp(usmActive,usmMcp)}</td><td class="text-end fw-bold">${fmt1(usmTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs)}</td><td class="text-center fw-bold">${fmt1(usmPct)}%</td><td class="text-end fw-bold">${bq(usmTarget,usmDs)}</td></tr>` + html.slice(_hi);
   });
   totActive = totSet.size;
   const totPct = totTarget? totDs/totTarget*100:0;
-  html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-center fw-bold">${fmt0(totActive)}</td><td class="text-end fw-bold">${fmt1(totTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(totDs)}</td><td class="text-center fw-bold">${fmt1(totPct)}%</td></tr>`;
+  html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-center fw-bold">${fmt0(totActive)}</td><td class="text-center fw-bold">${bp(totActive,totMcp)}</td><td class="text-end fw-bold">${fmt1(totTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(totDs)}</td><td class="text-center fw-bold">${fmt1(totPct)}%</td><td class="text-end fw-bold">${bq(totTarget,totDs)}</td></tr>`;
   document.getElementById('nvbhTableBody').innerHTML = html;
 }
 
