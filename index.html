@@ -883,11 +883,31 @@ function normalizeName(s){
   if(!s) return '';
   return String(s).trim().toLowerCase().replace(/\s+/g,' ').split(' ').map(w=> w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 }
+// NVBH nghỉ việc -> cộng số liệu (bán hàng, ASO, tuyến) cho NVBH nhận tuyến. Phi & Hương cùng mã route SB_PSTG0006_05
+var _NV_MERGE = null; // (var + tạo khi dùng lần đầu, vì matchKey được gọi từ rất sớm lúc nạp trang)
+function _rawNvbhKey(name){ return normalizeName(String(name).replace(/\s*\(.*?\)\s*$/,'')); }
+function _nvMerge(){
+  if(!_NV_MERGE){ _NV_MERGE = {}; _NV_MERGE[_rawNvbhKey('Châu Thành Phi')] = _rawNvbhKey('Sơn Thị Hương'); }
+  return _NV_MERGE;
+}
 function matchKey(name){
   if(!name) return '';
-  return normalizeName(String(name).replace(/\s*\(.*?\)\s*$/,''));
+  const k = _rawNvbhKey(name);
+  return _nvMerge()[k] || k;
 }
-function buildNvbhListByUsm(){
+
+// NVBH có phát sinh (bán hàng / tuyến) nhưng không còn trong bảng chỉ tiêu (vd: đã nghỉ việc) — cần cộng vào USM để số không bị thiếu
+let _extraNvCache = { raw:null, route:null, list:[] };
+function _extraNvbhCandidates(){
+  if(_extraNvCache.raw===RAW && _extraNvCache.route===ROUTE) return _extraNvCache.list;
+  const seen = new Set(), list = [];
+  const add = (name, usmName)=>{ const k = matchKey(name); if(!k || seen.has(k)) return; seen.add(k); list.push({name, key:k, usm:usmName}); };
+  RAW.forEach(r=>{ if(r.nvbh && r.dt && norm(r.tt)!==norm(REJECTED_STATUS)) add(r.nvbh, r.usm); });
+  ROUTE.forEach(c=>{ if(c.nvbh && norm(c.kenh)!=='GTPH') add(c.nvbh, c.usm); });
+  _extraNvCache = { raw:RAW, route:ROUTE, list };
+  return list;
+}
+function buildNvbhListByUsm(includeExtra){
   const out = {};
   (TARGETS.nvbh||[]).forEach(row=>{
     const uk = usmKey(row.usm);
@@ -902,11 +922,30 @@ function buildNvbhListByUsm(){
     });
   });
   Object.keys(out).forEach(uk=> out[uk].sort((a,b)=> b.target - a.target));
+  if(includeExtra){
+    const known = new Set(); Object.values(out).forEach(a=>a.forEach(it=>known.add(it.key)));
+    _extraNvbhCandidates().forEach(e=>{
+      if(known.has(e.key)) return;
+      const uk = usmKey(e.usm); if(!uk) return;
+      (out[uk] = out[uk] || []).push({ name:e.name, display:e.name, key:e.key, target:0, cats:{}, extra:true });
+    });
+  }
   return out;
 }
 
 // ---------- LOAD / SAVE ----------
+const MASTER_VER = '2026-09-20';           // đổi số này mỗi lần cập nhật Master SP trong file
+const MASTER_VER_KEY = 'BAMMK4_MASTER_VER';
 function loadAll(){
+  // Master SP nhúng trong file mới hơn bản đã lưu trên máy -> bỏ bản cũ, dùng bản trong file
+  try{
+    if(localStorage.getItem(MASTER_VER_KEY) !== MASTER_VER){
+      localStorage.removeItem(MASTER_KEY); localStorage.removeItem(MASTER_CAT_KEY);
+      let meta = {}; try{ meta = JSON.parse(localStorage.getItem(META_KEY)||'{}'); }catch(e){}
+      meta.masterName = 'Master_sản_phẩm (20/09)'; localStorage.setItem(META_KEY, JSON.stringify(meta));
+      localStorage.setItem(MASTER_VER_KEY, MASTER_VER);
+    }
+  }catch(e){}
   try{ const r = localStorage.getItem(RAW_KEY); RAW = compactToRaw(r ? JSON.parse(r) : DEFAULT_RAW); }catch(e){ RAW = compactToRaw(DEFAULT_RAW); }
   try{ const rt = localStorage.getItem(ROUTE_KEY); ROUTE = rt ? JSON.parse(rt) : DEFAULT_ROUTE; }catch(e){ ROUTE = DEFAULT_ROUTE; }
   try{ const sn = localStorage.getItem(SN_KEY); SN_SKUS = new Set(sn ? JSON.parse(sn) : DEFAULT_SN); }catch(e){ SN_SKUS = new Set(DEFAULT_SN); }
@@ -1505,6 +1544,8 @@ const REJECTED_STATUS = 'Từ chối';
 function statusOk(tt, includeAllExceptRejected){
   return includeAllExceptRejected ? norm(tt)!==norm(REJECTED_STATUS) : norm(tt)===norm(APPROVED_STATUS);
 }
+// SKU sữa nước (danh sách Bán chéo): chỉ phục vụ data Bán chéo, KHÔNG đếm vào bất kỳ ASO nào
+function isCrossSellRow(r){ return SN_SKUS.has(r.sku) && !(r.npp && norm(r.npp).includes(norm(HUE_PHUONG_NPP))); }
 function computeAggregates(pred, includeAllExceptRejected){
   const validRaw = RAW.filter(r=> statusOk(r.tt, includeAllExceptRejected) && pred(r.ngay));
 
@@ -1535,16 +1576,16 @@ function computeAggregates(pred, includeAllExceptRejected){
     const uk = usmKey(r.usm);
     if(uk){
       dsByUsm[uk] = (dsByUsm[uk]||0)+r.dt;
-      if(r.dt) (activeSetByUsm[uk] = activeSetByUsm[uk]||new Set()).add(r.makh);
+      if(r.dt && !isCrossSellRow(r)) (activeSetByUsm[uk] = activeSetByUsm[uk]||new Set()).add(r.makh);
     }
     if(r.nvbh){
       const nk = matchKey(r.nvbh);
       dsByNvbh[nk] = (dsByNvbh[nk]||0)+r.dt;
-      if(r.dt) (activeSetByNvbh[nk] = activeSetByNvbh[nk]||new Set()).add(r.makh);
+      if(r.dt && !isCrossSellRow(r)) (activeSetByNvbh[nk] = activeSetByNvbh[nk]||new Set()).add(r.makh);
     }
     const kb = kenhBucket(r.kenh);
     dsByKenh[kb] = (dsByKenh[kb]||0)+r.dt;
-    if(r.dt) (activeSetByKenh[kb] = activeSetByKenh[kb]||new Set()).add(r.makh);
+    if(r.dt && !isCrossSellRow(r)) (activeSetByKenh[kb] = activeSetByKenh[kb]||new Set()).add(r.makh);
   });
 
   const ds8ByKenh = {};
@@ -1567,10 +1608,10 @@ function computeAggregates(pred, includeAllExceptRejected){
     if(!kenhByUsm[uk]) kenhByUsm[uk] = {};
     if(!kenhByUsm[uk][kb]) kenhByUsm[uk][kb] = {mcp:0, ds8:0, ds9:0, activeSet:new Set()};
     kenhByUsm[uk][kb].ds9 += r.dt;
-    if(r.dt) kenhByUsm[uk][kb].activeSet.add(r.makh);
+    if(r.dt && !isCrossSellRow(r)) kenhByUsm[uk][kb].activeSet.add(r.makh);
   });
 
-  const isSnRow = r => SN_SKUS.has(r.sku) && !(r.npp && norm(r.npp).includes(norm(HUE_PHUONG_NPP)));
+  const isSnRow = isCrossSellRow;
   const crossDayByNvbh = {}, crossAllByNvbh = {}, crossAsoSetByNvbh = {};
   RAW.forEach(r=>{
     if(!statusOk(r.tt, includeAllExceptRejected) || !isSnRow(r)) return;
@@ -1582,7 +1623,7 @@ function computeAggregates(pred, includeAllExceptRejected){
 
   // KH có phát sinh mua hàng đã duyệt trong data thô (toàn kỳ Tháng 9, không phụ thuộc bộ lọc ngày)
   const activeSeptSet = new Set();
-  RAW.forEach(r=>{ if(statusOk(r.tt, includeAllExceptRejected) && r.dt) activeSeptSet.add(r.makh); });
+  RAW.forEach(r=>{ if(statusOk(r.tt, includeAllExceptRejected) && r.dt && !isCrossSellRow(r)) activeSeptSet.add(r.makh); });
 
   // Bán Lại: nhóm "chưa mua" lấy từ cờ trong file Tuyến; "bán lại được" = check thẳng data thô xem KH đã mua chưa
   const banlai = {};
@@ -1648,7 +1689,7 @@ function computeAggregates(pred, includeAllExceptRejected){
     store[nk][cat] = (store[nk][cat]||0) + val;
   }
   RAW.forEach(r=>{
-    if(!statusOk(r.tt, includeAllExceptRejected) || !r.dt) return;
+    if(!statusOk(r.tt, includeAllExceptRejected) || !r.dt || isCrossSellRow(r)) return;
     if(norm(r.kenh)==='GTPH') return;
     const cat = SKU_KPI[r.sku];
     if(!cat) return;
@@ -1738,25 +1779,27 @@ function renderKpi6(agg){
 
   // Bảng chi tiết theo từng USM
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   let usmHtml = '';
   let totMcp = 0;
   const grandTotCats = {}; KPI_CATS.forEach(cat=> grandTotCats[cat] = {aso:0, ds:0, target:0});
+  const grandSets = {}; KPI_CATS.forEach(cat=> grandSets[cat] = new Set());
   order.forEach(uk=>{
     const usmTargets = TARGETS.usm[USM_FULLNAMES[uk]] || {};
     let usmMcp = 0;
     (nvbhList[uk]||[]).forEach(item=>{ usmMcp += agg.mcpByNvbh[item.key]||0; });
     totMcp += usmMcp;
     const cells = KPI_CATS.map(cat=>{
-      let asoV = 0;
+      const uSet = new Set();
       (nvbhList[uk]||[]).forEach(item=>{
         const asoMap = agg.asoAllByNvbh[item.key]||{};
-        asoV += (asoMap[cat]||new Set()).size;
+        (asoMap[cat]||new Set()).forEach(m=>{ uSet.add(m); grandSets[cat].add(m); });
       });
+      const asoV = uSet.size;
       const ds = (agg.kpi6ActualByUsm[uk]&&agg.kpi6ActualByUsm[uk][cat]||0)/1e6;
       const target = usmTargets[cat]||0;
       const pct = target? ds/target*100 : 0;
-      grandTotCats[cat].aso+=asoV; grandTotCats[cat].ds+=ds; grandTotCats[cat].target+=target;
+      grandTotCats[cat].ds+=ds; grandTotCats[cat].target+=target;
       return `<td class="text-center">${fmt0(asoV)}</td><td class="text-end">${fmt1(ds)}</td><td class="text-center">${fmt1(pct)}%</td>`;
     }).join('');
     usmHtml += `<tr data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center">${fmt0(usmMcp)}</td>${cells}</tr>`;
@@ -1764,7 +1807,7 @@ function renderKpi6(agg){
   const grandCells = KPI_CATS.map(cat=>{
     const t = grandTotCats[cat];
     const pct = t.target? t.ds/t.target*100 : 0;
-    return `<td class="text-center fw-bold">${fmt0(t.aso)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
+    return `<td class="text-center fw-bold">${fmt0(grandSets[cat].size)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
   }).join('');
   usmHtml += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td>${grandCells}</tr>`;
   document.getElementById('kpi6UsmTbody').innerHTML = usmHtml;
@@ -1803,25 +1846,30 @@ function renderActiveDays(){
 
 function renderNvbh(agg){
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   const expectedPct = getPacePct();
   let html='';
   let totMcp=0, totActive=0, totTarget=0, totDs=0;
+  const totSet = new Set();
   order.forEach(uk=>{
     const _hi = html.length;
     let usmMcp=0, usmActive=0, usmTarget=0, usmDs=0;
+    const usmSet = new Set();
     (nvbhList[uk]||[]).forEach(item=>{
       const mcp = agg.mcpByNvbh[item.key]||0;
       const active = (agg.activeSetByNvbh[item.key]||new Set()).size;
       const ds = (agg.dsByNvbh[item.key]||0)/1e6;
       const pct = item.target? ds/item.target*100 : 0;
-      totMcp+=mcp; totActive+=active; totTarget+=item.target||0; totDs+=ds;
-      usmMcp+=mcp; usmActive+=active; usmTarget+=item.target||0; usmDs+=ds;
+      totMcp+=mcp; totTarget+=item.target||0; totDs+=ds;
+      usmMcp+=mcp; usmTarget+=item.target||0; usmDs+=ds;
+      (agg.activeSetByNvbh[item.key]||new Set()).forEach(m=>{ usmSet.add(m); totSet.add(m); });
       html += `<tr class="nv-item-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-center">${fmt0(active)}</td><td class="text-end">${fmt1(item.target)}</td><td class="text-end text-primary fw-bold">${fmt1(ds)}</td><td class="text-center">${heatBadge(pct, item.target?expectedPct:0)}</td></tr>`;
     });
+    usmActive = usmSet.size;
     const usmPct = usmTarget? usmDs/usmTarget*100:0;
     html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs)}</td><td class="text-center fw-bold">${fmt1(usmPct)}%</td></tr>` + html.slice(_hi);
   });
+  totActive = totSet.size;
   const totPct = totTarget? totDs/totTarget*100:0;
   html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-center fw-bold">${fmt0(totActive)}</td><td class="text-end fw-bold">${fmt1(totTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(totDs)}</td><td class="text-center fw-bold">${fmt1(totPct)}%</td></tr>`;
   document.getElementById('nvbhTableBody').innerHTML = html;
@@ -1887,7 +1935,7 @@ function renderBanlaiUsm(agg){
 
 function renderBanlai(agg){
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   let html='';
   let totMcp=0, totM3=0, totBack3=0, totT8=0, totBack1=0;
   order.forEach(uk=>{
@@ -1948,25 +1996,30 @@ function renderVip(agg){
 
 function renderCrossSell(agg){
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   let html='';
   let usmHtml='';
   let totMcp=0, totDay=0, totAll=0, totAso=0;
+  const totSet = new Set();
   order.forEach(uk=>{
     const _hi = html.length;
     let usmMcp=0, usmDay=0, usmAll=0, usmAso=0;
+    const usmSet = new Set();
     (nvbhList[uk]||[]).forEach(item=>{
       const mcp = agg.mcpByNvbh[item.key]||0;
       const dayVal = (agg.crossDayByNvbh[item.key]||0)/1e6;
       const allVal = (agg.crossAllByNvbh[item.key]||0)/1e6;
       const aso = (agg.crossAsoSetByNvbh[item.key]||new Set()).size;
-      totMcp+=mcp; totDay+=dayVal; totAll+=allVal; totAso+=aso;
-      usmMcp+=mcp; usmDay+=dayVal; usmAll+=allVal; usmAso+=aso;
+      totMcp+=mcp; totDay+=dayVal; totAll+=allVal;
+      usmMcp+=mcp; usmDay+=dayVal; usmAll+=allVal;
+      (agg.crossAsoSetByNvbh[item.key]||new Set()).forEach(m=>{ usmSet.add(m); totSet.add(m); });
       html += `<tr class="nv-cross-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-end text-warning fw-bold">${fmt1(dayVal)}</td><td class="text-end text-success fw-bold">${fmt1(allVal)}</td><td class="text-center fw-bold ${aso?'text-success':''}">${fmt0(aso)} KH</td></tr>`;
     });
+    usmAso = usmSet.size;
     html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(usmDay)}</td><td class="text-end fw-bold text-success">${fmt1(usmAll)}</td><td class="text-center fw-bold">${fmt0(usmAso)} KH</td></tr>` + html.slice(_hi);
     usmHtml += `<tr data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(usmDay)}</td><td class="text-end fw-bold text-success">${fmt1(usmAll)}</td><td class="text-center fw-bold">${fmt0(usmAso)} KH</td></tr>`;
   });
+  totAso = totSet.size;
   html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(totDay)}</td><td class="text-end fw-bold text-success">${fmt1(totAll)}</td><td class="text-center fw-bold">${fmt0(totAso)} KH</td></tr>`;
   usmHtml += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(totDay)}</td><td class="text-end fw-bold text-success">${fmt1(totAll)}</td><td class="text-center fw-bold">${fmt0(totAso)} KH</td></tr>`;
   document.getElementById('crossSellTbody').innerHTML = html;
@@ -1977,17 +2030,19 @@ function renderAso(agg){
   const todayEl = document.getElementById('asoTodayDateLabel');
   if(todayEl) todayEl.innerText = getLatestDate() || '-';
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   function buildTable(asoStore, dsStore){
     let html='';
     let totMcp=0;
     const grandTotCats = {}; // {cat: {aso, ds, target}}
     KPI_CATS.forEach(cat=> grandTotCats[cat]={aso:0, ds:0, target:0});
+    const grandSets = {}; KPI_CATS.forEach(cat=> grandSets[cat]=new Set());
     order.forEach(uk=>{
       const _hi = html.length;
       let usmMcp=0;
       const usmTotCats = {};
       KPI_CATS.forEach(cat=> usmTotCats[cat]={aso:0, ds:0, target:0});
+      const usmSets = {}; KPI_CATS.forEach(cat=> usmSets[cat]=new Set());
       (nvbhList[uk]||[]).forEach(item=>{
         const mcp = agg.mcpByNvbh[item.key]||0;
         const asoMap = asoStore[item.key]||{};
@@ -1998,8 +2053,9 @@ function renderAso(agg){
           const dsV = (dsMap[cat]||0)/1e6;
           const tgt = (item.cats && item.cats[cat])||0;
           const pct = tgt? dsV/tgt*100 : 0;
-          usmTotCats[cat].aso+=asoV; usmTotCats[cat].ds+=dsV; usmTotCats[cat].target+=tgt;
-          grandTotCats[cat].aso+=asoV; grandTotCats[cat].ds+=dsV; grandTotCats[cat].target+=tgt;
+          (asoMap[cat]||new Set()).forEach(m=>{ usmSets[cat].add(m); grandSets[cat].add(m); });
+          usmTotCats[cat].ds+=dsV; usmTotCats[cat].target+=tgt;
+          grandTotCats[cat].ds+=dsV; grandTotCats[cat].target+=tgt;
           return `<td class="text-center">${fmt0(asoV)}</td><td class="text-end">${fmt1(dsV)}</td><td class="text-center">${fmt1(pct)}%</td>`;
         }).join('');
         html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td>${cells}</tr>`;
@@ -2007,14 +2063,14 @@ function renderAso(agg){
       const usmCells = KPI_CATS.map(cat=>{
         const t = usmTotCats[cat];
         const pct = t.target? t.ds/t.target*100 : 0;
-        return `<td class="text-center fw-bold">${fmt0(t.aso)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
+        return `<td class="text-center fw-bold">${fmt0(usmSets[cat].size)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
       }).join('');
       html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td>${usmCells}</tr>` + html.slice(_hi);
     });
     const grandCells = KPI_CATS.map(cat=>{
       const t = grandTotCats[cat];
       const pct = t.target? t.ds/t.target*100 : 0;
-      return `<td class="text-center fw-bold">${fmt0(t.aso)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
+      return `<td class="text-center fw-bold">${fmt0(grandSets[cat].size)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
     }).join('');
     html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td>${grandCells}</tr>`;
     return html;
@@ -2069,7 +2125,7 @@ function renderKpiAsoChart(){
     approved.forEach(r=>{
       if(r.ngay!==dmy) return;
       ds += r.dt||0;
-      asoSet.add(r.makh);
+      if(!isCrossSellRow(r)) asoSet.add(r.makh);
     });
     dsData.push(+(ds/1e6).toFixed(1));
     asoData.push(asoSet.size);
@@ -2482,29 +2538,30 @@ function renderHomnay(){
   if(!today){ document.getElementById('homnayTbody').innerHTML = '<tr><td colspan="15" class="text-center text-muted">Chưa có dữ liệu</td></tr>'; return; }
   const agg = computeAggregates(ng=>ng===today, true); // tính đủ trạng thái trừ Từ chối
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   let html='';
-  let gAso=0, gDs=0; const gCat = KPI_CATS.map(()=>({aso:0, ds:0}));
+  let gDs=0; const gSet = new Set(); const gCat = KPI_CATS.map(()=>({aso:new Set(), ds:0}));
   order.forEach(uk=>{
-    let rows='', uAso=0, uDs=0; const uCat = KPI_CATS.map(()=>({aso:0, ds:0}));
+    let rows='', uDs=0; const uSet = new Set(); const uCat = KPI_CATS.map(()=>({aso:new Set(), ds:0}));
     (nvbhList[uk]||[]).forEach(item=>{
       const asoTong = (agg.activeSetByNvbh[item.key]||new Set()).size;
       const dsTong = (agg.dsByNvbh[item.key]||0)/1e6;
       const asoMap = agg.asoDayByNvbh[item.key]||{};
       const dsMap = agg.dsDayByNvbhCat[item.key]||{};
-      uAso += asoTong; uDs += dsTong;
+      uDs += dsTong;
+      (agg.activeSetByNvbh[item.key]||new Set()).forEach(m=>{ uSet.add(m); gSet.add(m); });
       const cells = KPI_CATS.map((cat,i)=>{
         const aso = (asoMap[cat]||new Set()).size;
         const ds = (dsMap[cat]||0)/1e6;
-        uCat[i].aso += aso; uCat[i].ds += ds;
+        (asoMap[cat]||new Set()).forEach(m=>{ uCat[i].aso.add(m); gCat[i].aso.add(m); }); uCat[i].ds += ds;
         return `<td class="text-center">${fmt0(aso)}</td><td class="text-end">${fmt1(ds)}</td>`;
       }).join('');
       rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center fw-bold text-success">${fmt0(asoTong)}</td><td class="text-end fw-bold text-primary">${fmt1(dsTong)}</td>${cells}</tr>`;
     });
-    gAso += uAso; gDs += uDs; uCat.forEach((c,i)=>{ gCat[i].aso += c.aso; gCat[i].ds += c.ds; });
-    html += usmHeadRow(uk, `<td class="text-center">${fmt0(uAso)}</td><td class="text-end">${fmt1(uDs)}</td>` + uCat.map(c=>`<td class="text-center">${fmt0(c.aso)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('')) + rows;
+    gDs += uDs; uCat.forEach((c,i)=>{ gCat[i].ds += c.ds; });
+    html += usmHeadRow(uk, `<td class="text-center">${fmt0(uSet.size)}</td><td class="text-end">${fmt1(uDs)}</td>` + uCat.map(c=>`<td class="text-center">${fmt0(c.aso.size)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('')) + rows;
   });
-  html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center">${fmt0(gAso)}</td><td class="text-end">${fmt1(gDs)}</td>` + gCat.map(c=>`<td class="text-center">${fmt0(c.aso)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('') + `</tr>`;
+  html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center">${fmt0(gSet.size)}</td><td class="text-end">${fmt1(gDs)}</td>` + gCat.map(c=>`<td class="text-center">${fmt0(c.aso.size)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('') + `</tr>`;
   document.getElementById('homnayTbody').innerHTML = html;
   renderHomnayVisit(today);
 }
@@ -2547,7 +2604,7 @@ function exportHomnayExcel(){
   if(!today){ alert('Chưa có dữ liệu để xuất.'); return; }
   const agg = computeAggregates(ng=>ng===today, true);
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   const aoa = [['USM','NVBH','ASO Tổng','DS Tổng (Tr)', ...KPI_CATS.flatMap(c=>['ASO '+(KPI_LABELS[c]||c), 'DS '+(KPI_LABELS[c]||c)+' (Tr)'])]];
   order.forEach(uk=>{
     (nvbhList[uk]||[]).forEach(item=>{
@@ -2742,7 +2799,7 @@ function exportAsoTodayExcel(){
   if(!today){ alert('Chưa có dữ liệu để xuất.'); return; }
   const agg = computeAggregates(ng=>ng===today);
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   const aoa = [['USM','NVBH','MCP', ...KPI_CATS.flatMap(c=>['ASO '+(KPI_LABELS[c]||c), 'DS '+(KPI_LABELS[c]||c)+' (Tr)'])]];
   order.forEach(uk=>{
     (nvbhList[uk]||[]).forEach(item=>{
@@ -3126,7 +3183,7 @@ function computeAsoMoi(){
     store[key][cat].add(makh);
   }
   RAW.forEach(r=>{
-    if(!statusOk(r.tt, true) || !r.dt) return;
+    if(!statusOk(r.tt, true) || !r.dt || isCrossSellRow(r)) return;
     if(norm(r.kenh)==='GTPH') return;
     const cat = SKU_KPI[r.sku];
     if(!cat) return;
@@ -3185,7 +3242,7 @@ function renderAsoMoi(){
   usmTbody.innerHTML = html1;
 
   // Bảng 2: NVBH theo USM
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   let html2 = '';
   order.forEach(uk=>{
     { const mU = result.newUk[uk] || {};
@@ -3218,7 +3275,7 @@ function exportAsoMoiExcel(){
   ws1['!cols'] = [{wch:20},{wch:14}, ...KPI_CATS.map(()=>({wch:12}))];
 
   const aoa2 = [['USM','NVBH','Tổng ASO Mới', ...KPI_CATS.map(c=>KPI_LABELS[c]||c)]];
-  const nvbhList = buildNvbhListByUsm();
+  const nvbhList = buildNvbhListByUsm(true);
   order.forEach(uk=>{
     (nvbhList[uk]||[]).forEach(item=>{
       const m = result.newNk[item.key] || {};
