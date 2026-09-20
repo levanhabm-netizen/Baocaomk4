@@ -95,6 +95,38 @@
   .dayset summary { list-style: none; cursor: pointer; color: #6b8299; padding: 0 4px; }
   .dayset summary::-webkit-details-marker { display: none; }
   .dayset-box { position: absolute; right: 0; top: 100%; z-index: 30; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 0.7rem; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  /* Kẻ dọc phân tách nhóm cột (KPI) */
+  .table-custom th.gs, .table-custom td.gs { border-left: 2px solid #d8b878 !important; }
+  /* Ô tìm & chọn nhiều khách */
+  .khpick { position: relative; }
+  .kp-row { display: flex; gap: 4px; }
+  .kp-in { flex: 1; min-width: 0; font-size: 0.78rem; padding: 5px 9px; border: 1px solid #ffe0b3; border-radius: 8px; background: #fffaf0; color: #1e3a52; }
+  .kp-clear { font-size: 0.62rem; border: 1px solid #f0b4b4; background: #fff; color: #dc3545; border-radius: 8px; padding: 0 9px; white-space: nowrap; }
+  .kp-dd { position: absolute; left: 0; right: 0; top: 100%; z-index: 60; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.18); max-height: 250px; overflow-y: auto; margin-top: 2px; -webkit-overflow-scrolling: touch; }
+  .kp-it { display: flex; gap: 7px; align-items: flex-start; padding: 6px 9px; border-bottom: 1px solid #f3e8d6; font-size: 0.72rem; color: #1e3a52; cursor: pointer; }
+  .kp-it small { display: block; color: #6b8299; font-size: 0.6rem; }
+  .kp-it.on { background: #fff3e0; }
+  .kp-ck { font-size: 0.9rem; line-height: 1.1; }
+  .kp-all { padding: 6px 9px; font-size: 0.68rem; font-weight: 700; color: #b45309; background: #fff8ec; border-bottom: 1px solid #f3e8d6; cursor: pointer; }
+  .kp-none { padding: 8px 9px; font-size: 0.68rem; color: #6b8299; }
+  .kp-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; align-items: center; max-height: 76px; overflow-y: auto; }
+  .kp-chip { background: #fff3e0; border: 1px solid #ffcc80; color: #8a4b00; border-radius: 12px; padding: 1px 3px 1px 8px; font-size: 0.62rem; display: inline-flex; align-items: center; gap: 3px; max-width: 100%; }
+  .kp-chip b { cursor: pointer; padding: 0 5px; font-size: 0.8rem; line-height: 1; }
+  .kp-count { font-size: 0.62rem; color: #6b8299; }
+  #uploadStatus.exp { white-space: normal; }
+  /* ===== Bảng: tiêu đề rõ chữ, hàng mảnh, tô nhóm nhẹ ===== */
+  .table-custom th { background-color: #e3eef7 !important; color: #1e3a52 !important; font-weight: 700; border-bottom: 1.5px solid #8fb8d8 !important; padding: 3px 3px; }
+  .table-custom thead tr:nth-child(2) th { background-color: #f0f6fb !important; color: #3d5a75 !important; font-weight: 600; }
+  .table-custom thead tr.table-danger th { background-color: #fde7e7 !important; color: #8f1d1d !important; border-bottom-color: #f0a3a3 !important; }
+  .table-custom th.gt { background-color: #d3e6f5 !important; }
+  .table-custom thead tr:nth-child(2) th.gt { background-color: #e1eef8 !important; }
+  .table-custom td { padding: 2px 3px; line-height: 1.15; border-color: #f1e7d5; }
+  .table-custom td.gt { background-color: rgba(59,158,224,0.07); }
+  .table-custom tbody tr:nth-child(even):not(.usm-head):not(.table-secondary) { background: rgba(30,58,82,0.02); }
+  .table-custom tr.usm-head td { background-color: #fdf3dc !important; color: #4a2f08 !important; font-weight: 700; border-top: 1px solid #efd9a3 !important; border-bottom: 1px solid #efd9a3 !important; }
+  .table-custom tr.usm-head td:first-child { border-left: 3px solid #f5b942 !important; }
+  .table-custom .table-secondary td { background-color: #fbe6b5 !important; color: #4a2f08 !important; border-top: 1px solid #e8c56a !important; font-weight: 700; }
+  .table-custom .table-success td { background-color: #e4f5e9 !important; color: #14532d !important; font-weight: 700; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
@@ -167,7 +199,7 @@
       </details>
     <button class="btn-upload-compact export ms-auto" onclick="exportCurrentFile()"><i class="fa-solid fa-download"></i> Xuất</button>
   </div>
-  <div id="uploadStatus">Data BH: <span id="metaDataBh">mặc định</span> | KH/KPI: <span id="metaKhKpi">mặc định</span> | DM SN: <span id="metaDmSn">mặc định</span> | Chỉ Tiêu: <span id="metaChiTieu">mặc định</span> | Master SP: <span id="metaMaster">mặc định</span></div>
+  <div id="uploadStatus" onclick="this.classList.toggle('exp')">Data BH: <span id="metaDataBh">mặc định</span> | KH/KPI: <span id="metaKhKpi">mặc định</span> | DM SN: <span id="metaDmSn">mặc định</span> | Chỉ Tiêu: <span id="metaChiTieu">mặc định</span> | Master SP: <span id="metaMaster">mặc định</span></div>
 </div>
 <!-- Bộ lọc ngày & USM (áp dụng toàn bộ báo cáo) -->
 <div class="px-2 mt-1">
@@ -248,7 +280,7 @@
 
     <div class="card-box">
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,4,7">
           <thead><tr><th>USM</th><th>MCP</th><th>Active</th><th>%BP</th><th>CT (Tr)</th><th>DS (Tr)</th><th>%HT</th><th id="usmTodayHeader">Hôm Nay</th></tr></thead>
           <tbody id="usmOverviewTbody"></tbody>
         </table>
@@ -308,7 +340,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-luyke-ds', 'LuyKe_ChiTiet')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,3">
           <thead><tr><th>USM / NVBH</th><th>MCP</th><th>Active</th><th>CT (Tr)</th><th>DS (Tr)</th><th>%HT</th></tr></thead>
           <tbody id="nvbhTableBody"></tbody>
         </table>
@@ -325,7 +357,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-banlai-usm', 'BanLai_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,2,4">
           <thead><tr><th>USM</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
           <tbody id="banlaiUsmTbody"></tbody>
         </table>
@@ -338,7 +370,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-banlai-nvbh', 'BanLai_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,2,4">
           <thead><tr><th>USM / NVBH</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
           <tbody id="banlaiTbody"></tbody>
         </table>
@@ -381,7 +413,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-kenh-usm', 'Kenh_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,3">
           <thead><tr><th>USM / Kênh</th><th>MCP</th><th>Active</th><th>T08 (Tr)</th><th>T09 (Tr)</th></tr></thead>
           <tbody id="kenhByUsmTbody"></tbody>
         </table>
@@ -394,7 +426,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-kenh-tong', 'Kenh_Tong')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1,3,5">
           <thead><tr><th>Kênh</th><th>MCP</th><th>Active</th><th>T08 (Tr)</th><th>T09 (Tr)</th><th id="kenhTodayHeader">Hôm Nay</th></tr></thead>
           <tbody id="kenhTbody"></tbody>
         </table>
@@ -404,7 +436,7 @@
 
   <!-- ================= 6. VIP ================= -->
   <div id="sec-vip" class="section-tab">
-    
+    <div id="khPickVip" class="khpick mb-1"></div>
     <div class="card-box mb-3" style="border-left: 4px solid var(--danger); background-color: #fff5f5;" id="capture-vip-homnay">
       <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 border-danger">
         <div class="fw-bold text-danger" style="font-size: 0.8rem;">
@@ -422,7 +454,7 @@
 
     <div class="card-box" id="capture-vip-tong">
       <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-        <div class="fw-bold text-warning" style="font-size: 0.78rem;">➤ Danh sách chung</div>
+        <div class="fw-bold text-warning" style="font-size: 0.78rem;">➤ VIP các ngày khác</div>
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-vip-tong', 'VIP_Tong')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
@@ -445,7 +477,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-bancheo-usm', 'BanCheo_USM')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1+">
           <thead><tr><th>USM</th><th>MCP</th><th>DS kỳ chọn (Tr)</th><th>Lũy kế (Tr)</th><th>ASO (KH)</th></tr></thead>
           <tbody id="crossSellUsmTbody"></tbody>
         </table>
@@ -458,7 +490,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-bancheo-nvbh', 'BanCheo_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-custom mb-0" data-gs="1+">
           <thead><tr><th>USM / NVBH</th><th>MCP</th><th>DS kỳ chọn (Tr)</th><th>Lũy kế (Tr)</th><th>ASO (KH)</th></tr></thead>
           <tbody id="crossSellTbody"></tbody>
         </table>
@@ -564,7 +596,7 @@
                   </div>
                 </div>
                 <div class="table-responsive">
-                  <table id="table-sosanh8" class="table table-hover table-custom mb-0" style="font-size:0.64rem;">
+                  <table id="table-sosanh8" class="table table-hover table-custom mb-0" style="font-size:0.64rem;" data-gs="1+">
                     <thead><tr><th>USM / NVBH</th><th>SB SDD/TCKM</th><th>SBPS SDD/TCKM</th><th>SN/LACTO</th><th>TH/FRUITY</th><th>VARNA</th></tr></thead>
                     <tbody id="asoT08CompareTbody"></tbody>
                   </table>
@@ -581,7 +613,7 @@
                   </div>
                 </div>
                 <div class="table-responsive">
-                  <table id="table-sosanhRR" class="table table-hover table-custom mb-0" style="font-size:0.64rem;">
+                  <table id="table-sosanhRR" class="table table-hover table-custom mb-0" style="font-size:0.64rem;" data-gs="1,3">
                     <thead><tr><th>USM / NVBH</th><th>SB Hiện Tại</th><th>SB RR-3T</th><th>SBPS Hiện Tại</th><th>SBPS RR-3T</th></tr></thead>
                     <tbody id="rr3mCompareTbody"></tbody>
                   </table>
@@ -616,6 +648,7 @@
 
   <!-- ================= 9. DS THEO KHÁCH HÀNG (SB & SBPS) ================= -->
   <div id="sec-khachhang" class="section-tab">
+    <div id="khPickKh" class="khpick mb-1"></div>
     <div class="d-flex gap-1 mb-1">
       <select id="khachHangStatusFilter" class="form-select form-select-sm" style="flex:1; min-width:0; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderKhachHang(LAST_AGG)">
         <option value="ALL">Mọi trạng thái</option><option value="DA">Đã mua</option><option value="CHUA">Chưa mua</option>
@@ -629,7 +662,7 @@
     </div>
     <div class="card-box">
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size: 0.64rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size: 0.64rem;" data-gs="2,3,6+">
           <thead><tr><th>Khách Hàng</th><th>USM / NVBH</th><th>TT</th><th>SB (Tr)</th><th>SBPS (Tr)</th><th>Tổng (Tr)</th><th>SB SDD/TCKM</th><th>SBPS SDD/TCKM</th><th>SN/LACTO</th><th>TH/FRUITY</th><th>VARNA</th><th>SB Others</th></tr></thead>
           <tbody id="khachHangTbody"></tbody>
         </table>
@@ -648,7 +681,7 @@
       </div>
       <div id="tuyenDsEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu đi tuyến.</div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size: 0.66rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size: 0.66rem;" data-gs="1,4">
           <thead><tr><th>USM / NVBH</th><th>% Ghé đủ</th><th>% Ra Đơn</th><th>%HT Doanh Số</th><th>Nhận Định</th></tr></thead>
           <tbody id="tuyenDsTbody"></tbody>
         </table>
@@ -664,7 +697,7 @@
       </div>
       <div id="wwEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu WW.</div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;" data-gs="1,3">
           <thead><tr><th>USM</th><th>Số KH Ghé WW</th><th>Số KH Fieldwork</th><th>NVBH Đã Đi Cùng</th></tr></thead>
           <tbody id="wwUsmTbody"></tbody>
         </table>
@@ -699,7 +732,7 @@
         </div>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.62rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.62rem;" data-gs="1">
           <thead>
             <tr><th rowspan="2">USM / NVBH</th><th rowspan="2">ASO Tổng</th><th rowspan="2">DS Tổng (Tr)</th><th colspan="2">SB SDD/TCKM</th><th colspan="2">SBPS SDD/TCKM</th><th colspan="2">SN/LACTO</th><th colspan="2">TH/FRUITY</th><th colspan="2">VARNA</th><th colspan="2">SB Others</th></tr>
             <tr><th>ASO</th><th>DS</th><th>ASO</th><th>DS</th><th>ASO</th><th>DS</th><th>ASO</th><th>DS</th><th>ASO</th><th>DS</th><th>ASO</th><th>DS</th></tr>
@@ -717,7 +750,7 @@
       </div>
       <div id="homnayVisitEmpty" class="text-center text-muted p-3" style="display:none;">Chưa có dữ liệu đi tuyến.</div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.66rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.66rem;" data-gs="1,3,5">
           <thead><tr><th>USM / NVBH</th><th>Phải Ghé</th><th>Đã Ghé</th><th>Có Đơn</th><th>Không Đơn</th><th>% Ghé Đủ</th></tr></thead>
           <tbody id="homnayVisitTbody"></tbody>
         </table>
@@ -738,7 +771,7 @@
         </div>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;" data-gs="1+">
           <thead>
             <tr><th>USM / Khu Vực</th><th>Tổng</th><th>SB SDD/TCKM</th><th>SBPS SDD/TCKM</th><th>SN/LACTO</th><th>TH/FRUITY</th><th>VARNA</th><th>SB Others</th></tr>
           </thead>
@@ -754,7 +787,7 @@
         <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-asomoi-nvbh', 'ASOMoi_NVBH')" style="font-size: 0.65rem;"><i class="fa-solid fa-image"></i> Ảnh</button>
       </div>
       <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;">
+        <table class="table table-hover table-custom mb-0" style="font-size:0.68rem;" data-gs="1+">
           <thead>
             <tr><th>USM / NVBH</th><th>Tổng</th><th>SB SDD/TCKM</th><th>SBPS SDD/TCKM</th><th>SN/LACTO</th><th>TH/FRUITY</th><th>VARNA</th><th>SB Others</th></tr>
           </thead>
@@ -894,6 +927,10 @@ function saveMeta() {
       if (el) el.innerText = val; 
     };
 
+    const stEl = document.getElementById('uploadStatus');
+    if(stEl && !document.getElementById('metaDataBh')){
+      stEl.innerHTML = 'Data BH: <span id="metaDataBh"></span> | KH/KPI: <span id="metaKhKpi"></span> | DM SN: <span id="metaDmSn"></span> | Chỉ Tiêu: <span id="metaChiTieu"></span> | Master SP: <span id="metaMaster"></span>';
+    }
     safeSet('metaDataBh', meta.rawName || 'mặc định');
     safeSet('metaKhKpi', meta.routeName || 'mặc định');
     safeSet('metaDmSn', meta.snName || 'mặc định');
@@ -1130,86 +1167,120 @@ function handleRawUpload(event){
   }, 30);
 }
 // HÀM MỚI: Kéo ĐỒNG THỜI Bán Hàng (Nút 1) & Đi Tuyến (Nút 6)
-async function handleCloudSync() {
+let _cloudSyncing = false;
+const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
+function _safeStore(key, val){ try{ localStorage.setItem(key, val); }catch(e){} } // đầy bộ nhớ thì bỏ qua, data vẫn dùng được trong phiên
+// Tải JSON từ Cloud: thử tối đa 2 lần (lần 2 thêm tham số chống cache), chờ tối đa 120 giây/lần, báo lỗi rõ nguyên nhân
+async function _cloudFetch(say, label){
+  let lastErr = null;
+  for(let attempt=1; attempt<=2; attempt++){
+    const ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+    const t0 = Date.now();
+    const tm = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
+    const tick = setInterval(()=> say(`⏳ ${label} Cloud… ${Math.round((Date.now()-t0)/1000)}s${attempt>1?' (thử lại)':''}`), 1000);
+    try{
+      const url = attempt===1 ? CLOUD_URL : CLOUD_URL + '?t=' + Date.now();
+      const opt = {}; if(ctrl) opt.signal = ctrl.signal; if(attempt>1) opt.cache = 'no-store';
+      const res = await fetch(url, opt);
+      if(!res.ok) throw new Error('máy chủ trả mã ' + res.status);
+      const txt = await res.text();
+      try{ return JSON.parse(txt); }
+      catch(e){ throw new Error('Cloud trả về không phải dữ liệu JSON (' + txt.slice(0,50).replace(/\s+/g,' ') + '…) — kiểm tra quyền truy cập của Apps Script'); }
+    }catch(e){
+      lastErr = (e && e.name==='AbortError') ? new Error('quá 120 giây chưa tải xong (mạng chậm hoặc dữ liệu quá lớn)')
+              : (e instanceof TypeError ? new Error('không kết nối được tới Cloud (mạng/CORS): ' + e.message) : e);
+    }finally{ if(tm) clearTimeout(tm); clearInterval(tick); }
+    if(attempt<2) await new Promise(r=>setTimeout(r, 2500));
+  }
+  lastErr.stage = 'tải';
+  throw lastErr;
+}
+// opts.silent = true: tự đồng bộ nền khi mở trang (không hiện hộp thoại, lỗi thì giữ data đã lưu)
+async function handleCloudSync(opts) {
+  const silent = !!(opts && opts.silent);
+  if(_cloudSyncing) return;
+  _cloudSyncing = true;
   const statusEl = document.getElementById('uploadStatus');
-  if(statusEl) statusEl.innerText = '⏳ Đang tải dữ liệu Bán Hàng & Đi Tuyến...';
-
+  const say = m => { if(statusEl) statusEl.innerText = m; };
+  const notify = m => { if(!silent) alert(m); };
+  say(silent ? '⏳ Đang tự đồng bộ từ Cloud...' : '⏳ Đang tải dữ liệu Bán Hàng & Đi Tuyến...');
+  let stage = 'tải';
   try {
-    const url = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await _cloudFetch(say, silent ? 'Tự đồng bộ' : 'Đang tải');
+    stage = 'xử lý dữ liệu';
 
     if (data.error) {
-      alert('Lỗi từ Google Sheets: ' + data.error);
+      notify('Lỗi từ Google Sheets: ' + data.error);
+      window.__lastSyncError = 'Cloud báo lỗi: ' + data.error;
+      say(silent ? `⚠️ Chưa đồng bộ được (Cloud báo lỗi: ${data.error}) — đang dùng data đã lưu` : `❌ Cloud báo lỗi: ${data.error}`);
       return;
     }
 
     const rawList = data.khachHangList || [];
     // Tự động nhận diện dữ liệu Tuyến hay Đi Tuyến từ link trả về
-    const visitList = data.visitList || data.tuyenList || []; 
+    const visitList = data.visitList || data.tuyenList || [];
 
     if (rawList.length === 0 && visitList.length === 0) {
-      alert('Google Sheets hiện chưa có dữ liệu!');
+      notify('Google Sheets hiện chưa có dữ liệu!');
+      say(silent ? '⚠️ Cloud chưa có dữ liệu — đang dùng data đã lưu' : '⚠️ Cloud chưa có dữ liệu');
       return;
     }
 
-    // ==========================================
-    // 1. NẠP DATA BÁN HÀNG (Thay thế Nút số 1)
-    // ==========================================
+    // 1. DATA BÁN HÀNG
     let countRaw = 0;
     if (rawList.length > 0) {
-      // Tự động nhận diện form dữ liệu 
       const wsRaw = Array.isArray(rawList[0]) ? XLSX.utils.aoa_to_sheet(rawList) : XLSX.utils.json_to_sheet(rawList);
       const wbRaw = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbRaw, wsRaw, "Sheet1");
-      
       const parsedRaw = parseRawWorkbook(wbRaw);
       if (parsedRaw.length > 0) {
         RAW = parsedRaw;
-        localStorage.setItem('RAW_KEY', JSON.stringify(rawToCompact(RAW)));
+        _safeStore(RAW_KEY, JSON.stringify(rawToCompact(RAW)));
         countRaw = parsedRaw.length;
       }
     }
 
-    // ==========================================
-    // 2. NẠP DATA ĐI TUYẾN (Thay thế Nút số 6)
-    // ==========================================
+    // 2. DATA ĐI TUYẾN
     let countVisit = 0;
     if (visitList.length > 0) {
       const wsVisit = Array.isArray(visitList[0]) ? XLSX.utils.aoa_to_sheet(visitList) : XLSX.utils.json_to_sheet(visitList);
       const wbVisit = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wbVisit, wsVisit, "Sheet1");
-      
-      // GỌI CHUẨN VÀO HÀM "ĐI TUYẾN" CHỨ KHÔNG GỌI HÀM "MCP" NỮA
       const parsedVisit = parseVisitWorkbook(wbVisit);
       if (parsedVisit.length > 0) {
-        if (typeof VISIT !== 'undefined') VISIT = parsedVisit; 
-        localStorage.setItem('VISIT_KEY', JSON.stringify(parsedVisit));
+        VISIT = parsedVisit;
+        _safeStore(VISIT_KEY, JSON.stringify(parsedVisit));
         countVisit = parsedVisit.length;
       }
     }
 
-    // ==========================================
-    // 3. LƯU LỊCH SỬ & KÍCH HOẠT VẼ BẢNG
-    // ==========================================
-    let meta = {}; 
-    try { meta = JSON.parse(localStorage.getItem('META_KEY')||'{}'); } catch(e){}
-    if (countRaw > 0) meta.rawName = "Data_Cloud_BanHang"; 
+    // 3. LƯU TÊN NGUỒN & VẼ LẠI
+    let meta = {};
+    try { meta = JSON.parse(localStorage.getItem(META_KEY)||'{}'); } catch(e){}
+    if (countRaw > 0) meta.rawName = "Data_Cloud_BanHang";
     if (countVisit > 0) meta.visitName = "Data_Cloud_DiTuyen";
-    localStorage.setItem('META_KEY', JSON.stringify(meta));
-    
-    saveMeta(); 
-    if(typeof rebuildDateOptions === 'function') rebuildDateOptions(); 
+    _safeStore(META_KEY, JSON.stringify(meta));
+
+    saveMeta();
+    if(typeof rebuildDateOptions === 'function') rebuildDateOptions();
     if(typeof applyGlobalFilter === 'function') applyGlobalFilter();
-    
-    if(statusEl) statusEl.innerText = '✅ Đã đồng bộ Data xong!';
-    alert(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} dòng\n- Data Bán Hàng: ${countRaw} dòng`);
+
+    const now = new Date();
+    const hhmm = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    say(`✅ Đồng bộ ${hhmm} · Bán hàng ${countRaw} · Đi tuyến ${countVisit}`);
+    notify(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} dòng\n- Data Bán Hàng: ${countRaw} dòng`);
 
   } catch (err) {
-    alert('Lỗi: ' + err.message);
-    if(statusEl) statusEl.innerText = '❌ Có lỗi xảy ra';
+    const st = err && err.stage ? err.stage : stage;
+    const detail = `${st}: ${err && err.message ? err.message : err}`;
+    window.__lastSyncError = detail;
+    notify('Không đồng bộ được — ' + detail);
+    say(silent ? `⚠️ Chưa đồng bộ được (${detail}) — đang dùng data đã lưu` : `❌ Lỗi (${detail})`);
+  } finally {
+    _cloudSyncing = false;
   }
-}function handleRouteUpload(event){
+}
+function handleRouteUpload(event){
   const file = event.target.files[0]; if(!file) return;
   readFileAsWorkbook(file, (err, wb)=>{
     if(err){ alert('Lỗi đọc file: '+err.message); return; }
@@ -1667,18 +1738,35 @@ function renderKpi6(agg){
 
   // Bảng chi tiết theo từng USM
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const expectedPct = getPacePct();
+  const nvbhList = buildNvbhListByUsm();
   let usmHtml = '';
+  let totMcp = 0;
+  const grandTotCats = {}; KPI_CATS.forEach(cat=> grandTotCats[cat] = {aso:0, ds:0, target:0});
   order.forEach(uk=>{
     const usmTargets = TARGETS.usm[USM_FULLNAMES[uk]] || {};
-    usmHtml += `<tr data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td>` +
-      KPI_CATS.map(cat=>{
-        const ds = (agg.kpi6ActualByUsm[uk]&&agg.kpi6ActualByUsm[uk][cat]||0)/1e6;
-        const target = usmTargets[cat]||0;
-        const pct = target? ds/target*100 : 0;
-        return `<td class="text-end">${fmt1(ds)}</td><td class="text-center">${heatBadge(pct, expectedPct)}</td>`;
-      }).join('') + `</tr>`;
+    let usmMcp = 0;
+    (nvbhList[uk]||[]).forEach(item=>{ usmMcp += agg.mcpByNvbh[item.key]||0; });
+    totMcp += usmMcp;
+    const cells = KPI_CATS.map(cat=>{
+      let asoV = 0;
+      (nvbhList[uk]||[]).forEach(item=>{
+        const asoMap = agg.asoAllByNvbh[item.key]||{};
+        asoV += (asoMap[cat]||new Set()).size;
+      });
+      const ds = (agg.kpi6ActualByUsm[uk]&&agg.kpi6ActualByUsm[uk][cat]||0)/1e6;
+      const target = usmTargets[cat]||0;
+      const pct = target? ds/target*100 : 0;
+      grandTotCats[cat].aso+=asoV; grandTotCats[cat].ds+=ds; grandTotCats[cat].target+=target;
+      return `<td class="text-center">${fmt0(asoV)}</td><td class="text-end">${fmt1(ds)}</td><td class="text-center">${fmt1(pct)}%</td>`;
+    }).join('');
+    usmHtml += `<tr data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center">${fmt0(usmMcp)}</td>${cells}</tr>`;
   });
+  const grandCells = KPI_CATS.map(cat=>{
+    const t = grandTotCats[cat];
+    const pct = t.target? t.ds/t.target*100 : 0;
+    return `<td class="text-center fw-bold">${fmt0(t.aso)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
+  }).join('');
+  usmHtml += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td>${grandCells}</tr>`;
   document.getElementById('kpi6UsmTbody').innerHTML = usmHtml;
 }
 
@@ -1700,12 +1788,15 @@ function renderActiveDays(){
   });
   let html='';
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="3"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', sumDays=0, cnt=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const activeDays = (daysByNvbh[item.key]||new Set()).size;
       const pct = dayNum? activeDays/dayNum*100 : 0;
-      html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${activeDays}/${dayNum} ngày</td><td class="text-center">${heatBadge(pct, 100)}</td></tr>`;
+      sumDays += activeDays; cnt++;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${activeDays}/${dayNum} ngày</td><td class="text-center">${heatBadge(pct, 100)}</td></tr>`;
     });
+    const uPct = (cnt && dayNum) ? sumDays/(cnt*dayNum)*100 : 0;
+    html += usmHeadRow(uk, `<td class="text-center">${sumDays}/${cnt*dayNum} ngày</td><td class="text-center">${heatBadge(uPct, 100)}</td>`) + rows;
   });
   document.getElementById('activeDaysTbody').innerHTML = html;
 }
@@ -1717,7 +1808,7 @@ function renderNvbh(agg){
   let html='';
   let totMcp=0, totActive=0, totTarget=0, totDs=0;
   order.forEach(uk=>{
-    html += `<tr class="table-secondary usm-header-row" data-usm="${uk}"><td colspan="6"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    const _hi = html.length;
     let usmMcp=0, usmActive=0, usmTarget=0, usmDs=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const mcp = agg.mcpByNvbh[item.key]||0;
@@ -1729,7 +1820,7 @@ function renderNvbh(agg){
       html += `<tr class="nv-item-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-center">${fmt0(active)}</td><td class="text-end">${fmt1(item.target)}</td><td class="text-end text-primary fw-bold">${fmt1(ds)}</td><td class="text-center">${heatBadge(pct, item.target?expectedPct:0)}</td></tr>`;
     });
     const usmPct = usmTarget? usmDs/usmTarget*100:0;
-    html += `<tr class="nv-item-row row-subtotal" data-usm="${uk}"><td><strong>Tổng ${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs)}</td><td class="text-center fw-bold">${fmt1(usmPct)}%</td></tr>`;
+    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs)}</td><td class="text-center fw-bold">${fmt1(usmPct)}%</td></tr>` + html.slice(_hi);
   });
   const totPct = totTarget? totDs/totTarget*100:0;
   html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-center fw-bold">${fmt0(totActive)}</td><td class="text-end fw-bold">${fmt1(totTarget)}</td><td class="text-end fw-bold text-primary">${fmt1(totDs)}</td><td class="text-center fw-bold">${fmt1(totPct)}%</td></tr>`;
@@ -1757,7 +1848,7 @@ function renderKenhByUsm(agg){
   const totByKenh = {};
   kenhOrder.forEach(kb=> totByKenh[kb] = {mcp:0, active:0, ds8:0, ds9:0});
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="5"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    const _hi = html.length;
     const data = agg.kenhByUsm[uk] || {};
     let usmMcp=0, usmActive=0, usmDs8=0, usmDs9=0;
     kenhOrder.forEach(kb=>{
@@ -1766,7 +1857,7 @@ function renderKenhByUsm(agg){
       usmMcp+=d.mcp; usmActive+=d.activeSet.size; usmDs8+=d.ds8; usmDs9+=d.ds9;
       html += `<tr data-usm="${uk}"><td>${kb}</td><td class="text-center">${fmt0(d.mcp)}</td><td class="text-center text-success">${fmt0(d.activeSet.size)}</td><td class="text-end">${fmt1(d.ds8)}</td><td class="text-end text-primary fw-bold">${fmt1(d.ds9/1e6)}</td></tr>`;
     });
-    html += `<tr class="row-subtotal" data-usm="${uk}"><td><strong>Tổng ${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center text-success fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmDs8)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs9/1e6)}</td></tr>`;
+    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center text-success fw-bold">${fmt0(usmActive)}</td><td class="text-end fw-bold">${fmt1(usmDs8)}</td><td class="text-end fw-bold text-primary">${fmt1(usmDs9/1e6)}</td></tr>` + html.slice(_hi);
   });
   html += `<tr class="table-secondary"><td colspan="5"><strong>➤ TỔNG KHU VỰC BAMMK4</strong></td></tr>`;
   kenhOrder.forEach(kb=>{
@@ -1800,7 +1891,7 @@ function renderBanlai(agg){
   let html='';
   let totMcp=0, totM3=0, totBack3=0, totT8=0, totBack1=0;
   order.forEach(uk=>{
-    html += `<tr class="table-secondary usm-banlai-header" data-usm="${uk}"><td colspan="6"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    const _hi = html.length;
     let usmMcp=0, usmM3=0, usmBack3=0, usmT8=0, usmBack1=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const mcp = agg.mcpByNvbh[item.key]||0;
@@ -1813,7 +1904,7 @@ function renderBanlai(agg){
     });
     const usmPct3 = usmM3? (usmBack3/usmM3*100):0;
     const usmPct1 = usmT8? (usmBack1/usmT8*100):0;
-    html += `<tr class="nv-banlai-row row-subtotal" data-usm="${uk}"><td><strong>Tổng ${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmM3)}</td><td class="text-center text-success fw-bold">${fmt0(usmBack3)} (${fmt1(usmPct3)}%)</td><td class="text-center fw-bold">${fmt0(usmT8)}</td><td class="text-center text-success fw-bold">${fmt0(usmBack1)} (${fmt1(usmPct1)}%)</td></tr>`;
+    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-center fw-bold">${fmt0(usmM3)}</td><td class="text-center text-success fw-bold">${fmt0(usmBack3)} (${fmt1(usmPct3)}%)</td><td class="text-center fw-bold">${fmt0(usmT8)}</td><td class="text-center text-success fw-bold">${fmt0(usmBack1)} (${fmt1(usmPct1)}%)</td></tr>` + html.slice(_hi);
   });
   const pct3All = totM3? (totBack3/totM3*100):0;
   const pct1All = totT8? (totBack1/totT8*100):0;
@@ -1822,18 +1913,37 @@ function renderBanlai(agg){
 }
 
 function renderVip(agg){
-  let html='';
-  let totDs8=0;
-  agg.vip.forEach(c=>{
-    const uk = usmKey(c.usm);
-    const label = `${abbrevName(c.usm)} (${abbrevName(c.nvbh)})`;
-    totDs8 += c.dsT08||0;
-    html += `<tr data-usm="${uk}"><td>${label}</td><td><strong>${c.tenkh||''}</strong></td><td class="text-center">${c.kenh||''}</td><td class="text-end fw-bold text-danger">${fmt1(c.dsT08)}</td></tr>`;
+  // VIP = KH có DS T08 cao nhưng chưa mua T09. Tách 2 bảng: đang có tuyến HÔM NAY (chưa lên đơn) và các ngày khác.
+  const dow = new Date().getDay();
+  const thuHomNay = dow===0 ? 'CN' : String(dow+1);
+  const lbl = document.getElementById('vipTodayThuLabel');
+  if(lbl) lbl.innerText = thuHomNay==='CN' ? 'Chủ Nhật' : 'Thứ '+thuHomNay;
+  const thuText = c => (c.thuList&&c.thuList.length) ? c.thuList.map(t=> t==='CN' ? 'CN' : 'T'+t).join(' · ') : '-';
+  const kh = c => `<strong>${c.tenkh||''}</strong><br><span class="text-muted" style="font-size:0.58rem;">${c.makh||''}</span>`;
+  const label = c => `${abbrevName(c.usm)} (${abbrevName(c.nvbh)})`;
+  const today = [], others = [];
+  (agg.vip||[]).forEach(c=>{
+    if(KH_SEL.vip.size && !KH_SEL.vip.has(String(c.makh))) return; // chỉ các khách đã chọn
+    ((c.thuList||[]).includes(thuHomNay) ? today : others).push(c);
   });
-  if(agg.vip.length){
-    html += `<tr class="table-secondary"><td colspan="3"><strong>TỔNG KHU VỰC BAMMK4 (TOP 20)</strong></td><td class="text-end fw-bold text-danger">${fmt1(totDs8)}</td></tr>`;
-  }
-  document.getElementById('vipTbody').innerHTML = html || '<tr><td colspan="4" class="text-center text-muted">Không có dữ liệu</td></tr>';
+
+  // Bảng 1: VIP có tuyến hôm nay — USM/NVBH | Khách Hàng | Kênh | DS T08 | Hành Động
+  let h1 = '';
+  today.forEach(c=>{
+    const ds = fmt1(c.dsT08);
+    const msg = encodeURIComponent(`🚨 Cảnh báo: Khách VIP [${c.tenkh}] (DS T08: ${ds}Tr) có tuyến hôm nay nhưng chưa có đơn. Chốt ngay nhé!`);
+    h1 += `<tr data-usm="${usmKey(c.usm)}"><td>${label(c)}</td><td class="text-danger">${kh(c)}</td><td class="text-center">${kenhShort(c.kenh)}</td><td class="text-end fw-bold text-danger">${ds}</td><td class="text-center"><a href="https://zalo.me/?text=${msg}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.62rem; font-weight:bold; text-decoration:none;">Zalo</a></td></tr>`;
+  });
+  document.getElementById('vipTodayTbody').innerHTML = h1 || '<tr><td colspan="5" class="text-center text-success fw-bold py-2">Không có VIP nào rớt trên tuyến hôm nay</td></tr>';
+
+  // Bảng 2: VIP các ngày khác — USM/NVBH | Khách Hàng | Kênh | Thứ Đi Tuyến | DS T08
+  let h2 = '', tot = 0;
+  others.forEach(c=>{
+    tot += c.dsT08||0;
+    h2 += `<tr data-usm="${usmKey(c.usm)}"><td>${label(c)}</td><td>${kh(c)}</td><td class="text-center">${kenhShort(c.kenh)}</td><td class="text-center" style="white-space:nowrap;">${thuText(c)}</td><td class="text-end fw-bold text-danger">${fmt1(c.dsT08)}</td></tr>`;
+  });
+  if(others.length) h2 += `<tr class="table-secondary"><td colspan="4"><strong>TỔNG</strong></td><td class="text-end fw-bold text-danger">${fmt1(tot)}</td></tr>`;
+  document.getElementById('vipTbody').innerHTML = h2 || '<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>';
 }
 
 function renderCrossSell(agg){
@@ -1843,7 +1953,7 @@ function renderCrossSell(agg){
   let usmHtml='';
   let totMcp=0, totDay=0, totAll=0, totAso=0;
   order.forEach(uk=>{
-    html += `<tr class="table-secondary usm-cross-header" data-usm="${uk}"><td colspan="5"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    const _hi = html.length;
     let usmMcp=0, usmDay=0, usmAll=0, usmAso=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const mcp = agg.mcpByNvbh[item.key]||0;
@@ -1854,7 +1964,7 @@ function renderCrossSell(agg){
       usmMcp+=mcp; usmDay+=dayVal; usmAll+=allVal; usmAso+=aso;
       html += `<tr class="nv-cross-row" data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(mcp)}</td><td class="text-end text-warning fw-bold">${fmt1(dayVal)}</td><td class="text-end text-success fw-bold">${fmt1(allVal)}</td><td class="text-center fw-bold ${aso?'text-success':''}">${fmt0(aso)} KH</td></tr>`;
     });
-    html += `<tr class="nv-cross-row row-subtotal" data-usm="${uk}"><td><strong>Tổng ${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(usmDay)}</td><td class="text-end fw-bold text-success">${fmt1(usmAll)}</td><td class="text-center fw-bold">${fmt0(usmAso)} KH</td></tr>`;
+    html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(usmDay)}</td><td class="text-end fw-bold text-success">${fmt1(usmAll)}</td><td class="text-center fw-bold">${fmt0(usmAso)} KH</td></tr>` + html.slice(_hi);
     usmHtml += `<tr data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(usmDay)}</td><td class="text-end fw-bold text-success">${fmt1(usmAll)}</td><td class="text-center fw-bold">${fmt0(usmAso)} KH</td></tr>`;
   });
   html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center fw-bold">${fmt0(totMcp)}</td><td class="text-end fw-bold text-warning">${fmt1(totDay)}</td><td class="text-end fw-bold text-success">${fmt1(totAll)}</td><td class="text-center fw-bold">${fmt0(totAso)} KH</td></tr>`;
@@ -1874,7 +1984,7 @@ function renderAso(agg){
     const grandTotCats = {}; // {cat: {aso, ds, target}}
     KPI_CATS.forEach(cat=> grandTotCats[cat]={aso:0, ds:0, target:0});
     order.forEach(uk=>{
-      html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="20"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+      const _hi = html.length;
       let usmMcp=0;
       const usmTotCats = {};
       KPI_CATS.forEach(cat=> usmTotCats[cat]={aso:0, ds:0, target:0});
@@ -1899,7 +2009,7 @@ function renderAso(agg){
         const pct = t.target? t.ds/t.target*100 : 0;
         return `<td class="text-center fw-bold">${fmt0(t.aso)}</td><td class="text-end fw-bold">${fmt1(t.ds)}</td><td class="text-center fw-bold">${fmt1(pct)}%</td>`;
       }).join('');
-      html += `<tr class="row-subtotal" data-usm="${uk}"><td><strong>Tổng ${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td>${usmCells}</tr>`;
+      html = html.slice(0,_hi) + `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td><td class="text-center fw-bold">${fmt0(usmMcp)}</td>${usmCells}</tr>` + html.slice(_hi);
     });
     const grandCells = KPI_CATS.map(cat=>{
       const t = grandTotCats[cat];
@@ -2001,17 +2111,19 @@ function renderAsoT08Compare(agg){
   const T08_CATS = ['SB GP SDD/TCKM','SBPS GP SDD/TCKM','GP SN/LACTO','GP TH/FRUITY','VARNA'];
   let html='';
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="6"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows=''; const sNow = T08_CATS.map(()=>0), sBefore = T08_CATS.map(()=>0);
     (nvbhList[uk]||[]).forEach(item=>{
       const nowMap = agg.asoAllByNvbh[item.key]||{};
       const t08Map = agg.asoT08ByNvbh[item.key]||{};
-      const cells = T08_CATS.map(cat=>{
+      const cells = T08_CATS.map((cat,i)=>{
         const now = (nowMap[cat]||new Set()).size;
         const before = t08Map[cat]||0;
+        sNow[i]+=now; sBefore[i]+=before;
         return `<td class="text-center">${deltaArrow(now, before)}</td>`;
       }).join('');
-      html += `<tr data-usm="${uk}"><td>${item.display}</td>${cells}</tr>`;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td>${cells}</tr>`;
     });
+    html += usmHeadRow(uk, T08_CATS.map((c,i)=>`<td class="text-center">${deltaArrow(sNow[i], sBefore[i])}</td>`).join('')) + rows;
   });
   document.getElementById('asoT08CompareTbody').innerHTML = html;
 }
@@ -2021,14 +2133,16 @@ function renderRr3mCompare(agg){
   const nvbhList = buildNvbhListByUsm();
   let html='';
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="5"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', a1=0, a2=0, a3=0, a4=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const catMap = agg.dsAllByNvbhCat[item.key]||{};
       const sbNow = ((catMap['SB GP SDD/TCKM']||0) + (catMap['SB Others']||0))/1e6;
       const sbpsNow = (catMap['SBPS GP SDD/TCKM']||0)/1e6;
       const rr3 = agg.rr3mByNvbh[item.key]||{sb:0,sbps:0,tong:0};
-      html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-end text-primary fw-bold">${fmt1(sbNow)}</td><td class="text-end text-muted">${fmt1(rr3.sb)}</td><td class="text-end text-primary fw-bold">${fmt1(sbpsNow)}</td><td class="text-end text-muted">${fmt1(rr3.sbps)}</td></tr>`;
+      a1+=sbNow; a2+=rr3.sb; a3+=sbpsNow; a4+=rr3.sbps;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-end text-primary fw-bold">${fmt1(sbNow)}</td><td class="text-end text-muted">${fmt1(rr3.sb)}</td><td class="text-end text-primary fw-bold">${fmt1(sbpsNow)}</td><td class="text-end text-muted">${fmt1(rr3.sbps)}</td></tr>`;
     });
+    html += usmHeadRow(uk, `<td class="text-end">${fmt1(a1)}</td><td class="text-end">${fmt1(a2)}</td><td class="text-end">${fmt1(a3)}</td><td class="text-end">${fmt1(a4)}</td>`) + rows;
   });
   document.getElementById('rr3mCompareTbody').innerHTML = html;
 }
@@ -2129,6 +2243,7 @@ function getKhachHangFiltered(agg){
     if(statusF!=='ALL' && x.status!==statusF) return false;
     if(thuF!=='ALL' && !(x.thuList||[]).includes(thuF)) return false;
     if(nvbhF!=='ALL' && x.nvbh!==nvbhF) return false;
+    if(KH_SEL.kh.size && !KH_SEL.kh.has(String(x.makh))) return false; // chỉ các khách đã chọn
     return true;
   });
 }
@@ -2369,21 +2484,27 @@ function renderHomnay(){
   const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
   const nvbhList = buildNvbhListByUsm();
   let html='';
+  let gAso=0, gDs=0; const gCat = KPI_CATS.map(()=>({aso:0, ds:0}));
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="15"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', uAso=0, uDs=0; const uCat = KPI_CATS.map(()=>({aso:0, ds:0}));
     (nvbhList[uk]||[]).forEach(item=>{
       const asoTong = (agg.activeSetByNvbh[item.key]||new Set()).size;
       const dsTong = (agg.dsByNvbh[item.key]||0)/1e6;
       const asoMap = agg.asoDayByNvbh[item.key]||{};
       const dsMap = agg.dsDayByNvbhCat[item.key]||{};
-      const cells = KPI_CATS.map(cat=>{
+      uAso += asoTong; uDs += dsTong;
+      const cells = KPI_CATS.map((cat,i)=>{
         const aso = (asoMap[cat]||new Set()).size;
         const ds = (dsMap[cat]||0)/1e6;
+        uCat[i].aso += aso; uCat[i].ds += ds;
         return `<td class="text-center">${fmt0(aso)}</td><td class="text-end">${fmt1(ds)}</td>`;
       }).join('');
-      html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center fw-bold text-success">${fmt0(asoTong)}</td><td class="text-end fw-bold text-primary">${fmt1(dsTong)}</td>${cells}</tr>`;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center fw-bold text-success">${fmt0(asoTong)}</td><td class="text-end fw-bold text-primary">${fmt1(dsTong)}</td>${cells}</tr>`;
     });
+    gAso += uAso; gDs += uDs; uCat.forEach((c,i)=>{ gCat[i].aso += c.aso; gCat[i].ds += c.ds; });
+    html += usmHeadRow(uk, `<td class="text-center">${fmt0(uAso)}</td><td class="text-end">${fmt1(uDs)}</td>` + uCat.map(c=>`<td class="text-center">${fmt0(c.aso)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('')) + rows;
   });
+  html += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC BAMMK4</strong></td><td class="text-center">${fmt0(gAso)}</td><td class="text-end">${fmt1(gDs)}</td>` + gCat.map(c=>`<td class="text-center">${fmt0(c.aso)}</td><td class="text-end">${fmt1(c.ds)}</td>`).join('') + `</tr>`;
   document.getElementById('homnayTbody').innerHTML = html;
   renderHomnayVisit(today);
 }
@@ -2407,13 +2528,15 @@ function renderHomnayVisit(today){
   const nvbhList = buildNvbhListByUsm();
   let html='';
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="6"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', sp=0, sv=0, so=0, sn=0;
     (nvbhList[uk]||[]).forEach(item=>{
       const v = visitByNvbh[item.key] || {plan:0, order:0, noOrder:0};
       const visited = v.order + v.noOrder;
       const pct = v.plan? visited/v.plan*100 : null;
-      html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(v.plan)}</td><td class="text-center">${fmt0(visited)}</td><td class="text-center text-success">${fmt0(v.order)}</td><td class="text-center text-danger">${fmt0(v.noOrder)}</td><td class="text-center">${pct!=null?heatBadge(pct,100):'-'}</td></tr>`;
+      sp+=v.plan; sv+=visited; so+=v.order; sn+=v.noOrder;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${fmt0(v.plan)}</td><td class="text-center">${fmt0(visited)}</td><td class="text-center text-success">${fmt0(v.order)}</td><td class="text-center text-danger">${fmt0(v.noOrder)}</td><td class="text-center">${pct!=null?heatBadge(pct,100):'-'}</td></tr>`;
     });
+    html += usmHeadRow(uk, `<td class="text-center">${fmt0(sp)}</td><td class="text-center">${fmt0(sv)}</td><td class="text-center">${fmt0(so)}</td><td class="text-center">${fmt0(sn)}</td><td class="text-center">${sp?heatBadge(sv/sp*100,100):'-'}</td>`) + rows;
   });
   document.getElementById('homnayVisitTbody').innerHTML = html;
 }
@@ -2515,12 +2638,14 @@ function renderWwStats(){
   });
   let nvbhHtml = '';
   order.forEach(uk=>{
-    nvbhHtml += `<tr class="table-secondary" data-usm="${uk}"><td colspan="3"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', done=0, cnt=0, latest=null;
     (nvbhList[uk]||[]).forEach(item=>{
       const last = lastWwByNvbh[item.key];
+      cnt++; if(last){ done++; if(!latest || new Date(toISO(last)) > new Date(toISO(latest))) latest = last; }
       const statusHtml = last ? '<span class="text-success fw-bold">✅ Đã WW</span>' : '<span class="text-danger fw-bold">❌ Chưa WW</span>';
-      nvbhHtml += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${statusHtml}</td><td class="text-center">${last||'-'}</td></tr>`;
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${statusHtml}</td><td class="text-center">${last||'-'}</td></tr>`;
     });
+    nvbhHtml += usmHeadRow(uk, `<td class="text-center">${done}/${cnt} đã WW</td><td class="text-center">${latest||'-'}</td>`) + rows;
   });
   document.getElementById('wwNvbhTbody').innerHTML = nvbhHtml;
   showHideByUsm();
@@ -2547,7 +2672,15 @@ function renderTuyenDs(agg){
   const nvbhList = buildNvbhListByUsm();
   let html='';
   order.forEach(uk=>{
-    html += `<tr class="table-secondary" data-usm="${uk}"><td colspan="5"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    let rows='', sPlan=0, sVis=0, sOrd=0, sDs=0, sTgt=0;
+    const judge = (pv, ph) => {
+      if(pv==null) return ['Chưa có dữ liệu đi tuyến','text-muted'];
+      if(pv>=90 && ph<70) return ['Đi đủ nhưng DS thấp — cần xem kỹ năng chốt đơn','text-danger'];
+      if(pv<70 && ph>=90) return ['Đi thiếu nhưng DS vẫn ổn — rủi ro bỏ sót KH lâu dài','text-warning'];
+      if(pv>=90 && ph>=90) return ['Tốt — giữ vững','text-success'];
+      if(pv<70 && ph<70) return ['Cần cải thiện toàn diện (tuyến + doanh số)','text-danger'];
+      return ['Bình thường','text-muted'];
+    };
     (nvbhList[uk]||[]).forEach(item=>{
       const v = visitByNvbh[item.key] || {plan:0, order:0, noOrder:0};
       const visited = v.order + v.noOrder;
@@ -2555,17 +2688,13 @@ function renderTuyenDs(agg){
       const pctOrder = visited? v.order/visited*100 : null;
       const ds = (agg.dsByNvbh[item.key]||0)/1e6;
       const pctHt = item.target? ds/item.target*100 : 0;
-      let nhanDinh = 'Chưa có dữ liệu đi tuyến';
-      let nhanDinhClass = 'text-muted';
-      if(pctVisit!=null){
-        if(pctVisit>=90 && pctHt<70){ nhanDinh = 'Đi đủ nhưng DS thấp — cần xem kỹ năng chốt đơn'; nhanDinhClass='text-danger'; }
-        else if(pctVisit<70 && pctHt>=90){ nhanDinh = 'Đi thiếu nhưng DS vẫn ổn — rủi ro bỏ sót KH lâu dài'; nhanDinhClass='text-warning'; }
-        else if(pctVisit>=90 && pctHt>=90){ nhanDinh = 'Tốt — giữ vững'; nhanDinhClass='text-success'; }
-        else if(pctVisit<70 && pctHt<70){ nhanDinh = 'Cần cải thiện toàn diện (tuyến + doanh số)'; nhanDinhClass='text-danger'; }
-        else { nhanDinh='Bình thường'; nhanDinhClass='text-muted'; }
-      }
-      html += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${pctVisit!=null?fmt1(pctVisit)+'%':'-'}</td><td class="text-center">${pctOrder!=null?fmt1(pctOrder)+'%':'-'}</td><td class="text-center">${fmt1(pctHt)}%</td><td class="${nhanDinhClass}" style="font-size:0.62rem;">${nhanDinh}</td></tr>`;
+      sPlan+=v.plan; sVis+=visited; sOrd+=v.order; sDs+=ds; sTgt+=item.target||0;
+      const [nhanDinh, nhanDinhClass] = judge(pctVisit, pctHt);
+      rows += `<tr data-usm="${uk}"><td>${item.display}</td><td class="text-center">${pctVisit!=null?fmt1(pctVisit)+'%':'-'}</td><td class="text-center">${pctOrder!=null?fmt1(pctOrder)+'%':'-'}</td><td class="text-center">${fmt1(pctHt)}%</td><td class="${nhanDinhClass}" style="font-size:0.62rem;">${nhanDinh}</td></tr>`;
     });
+    const uVisit = sPlan? sVis/sPlan*100 : null, uOrder = sVis? sOrd/sVis*100 : null, uHt = sTgt? sDs/sTgt*100 : 0;
+    const [uND, uNDc] = judge(uVisit, uHt);
+    html += usmHeadRow(uk, `<td class="text-center">${uVisit!=null?fmt1(uVisit)+'%':'-'}</td><td class="text-center">${uOrder!=null?fmt1(uOrder)+'%':'-'}</td><td class="text-center">${fmt1(uHt)}%</td><td class="${uNDc}" style="font-size:0.62rem;">${uND}</td>`) + rows;
   });
   document.getElementById('tuyenDsTbody').innerHTML = html;
 }
@@ -3059,7 +3188,8 @@ function renderAsoMoi(){
   const nvbhList = buildNvbhListByUsm();
   let html2 = '';
   order.forEach(uk=>{
-    html2 += `<tr class="table-secondary" data-usm="${uk}"><td colspan="8"><strong>➤ USM: ${USM_FULLNAMES[uk]}</strong></td></tr>`;
+    { const mU = result.newUk[uk] || {};
+      html2 += usmHeadRow(uk, `<td class="text-center">${fmt0((mU['_ALL_']||new Set()).size)}</td>` + KPI_CATS.map(cat=> `<td class="text-center">${fmt0((mU[cat]||new Set()).size)}</td>`).join('')); }
     (nvbhList[uk]||[]).forEach(item=>{
       const m = result.newNk[item.key] || {};
       const tong = (m['_ALL_']||new Set()).size;
@@ -3151,6 +3281,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
   populateKpiAsoSelectors();
   const sel = document.getElementById('reportUsmSelect');
   if(sel.options.length>1){ sel.value = sel.options[1].value; generateUsmReport(); }
+  // Tự đồng bộ từ Cloud khi mở trang (chạy nền, có mạng mới chạy; lỗi thì giữ data đã lưu)
+  setTimeout(()=>{ if(navigator.onLine!==false && typeof XLSX!=='undefined') handleCloudSync({silent:true}); }, 400);
 });
 
 function checkLibrariesLoaded(){
@@ -3528,6 +3660,151 @@ async function pushToGoogleSheets() {
     if (statusEl) statusEl.innerText = "❌ Gửi thất bại";
   }
 }
+
+// Dòng USM có số tổng của các NVBH bên dưới
+function usmHeadRow(uk, cells){ return `<tr class="usm-head" data-usm="${uk}"><td><strong>${USM_FULLNAMES[uk]}</strong></td>${cells}</tr>`; }
+
+// ===== Kẻ đường dọc giữa các nhóm cột =====
+function _mapCols(rows){
+  const occ = [], res = [];
+  for(let ri=0; ri<rows.length; ri++){
+    const cells = rows[ri].cells; occ[ri] = occ[ri] || []; let c = 0;
+    for(let k=0; k<cells.length; k++){
+      const cell = cells[k];
+      while(occ[ri][c]) c++;
+      const cs = cell.colSpan||1, rs = cell.rowSpan||1;
+      res.push({cell, col:c, ri, cs});
+      for(let dr=0; dr<rs; dr++){ occ[ri+dr] = occ[ri+dr] || []; for(let dc=0; dc<cs; dc++) occ[ri+dr][c+dc] = true; }
+      c += cs;
+    }
+  }
+  return res;
+}
+function applyColGroups(table){
+  const starts = new Set(); let fromIdx = null;
+  (table.dataset.gs||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(t=>{
+    const n = parseInt(t,10); if(isNaN(n)) return;
+    if(t.endsWith('+')) fromIdx = fromIdx==null ? n : Math.min(fromIdx, n); else starts.add(n);
+  });
+  const head = table.tHead ? Array.from(table.tHead.rows) : [];
+  const headMap = _mapCols(head);
+  headMap.filter(x=> x.ri===0 && x.cs>1).forEach(x=> starts.add(x.col)); // nhóm theo colspan (vd: SB SDD/TCKM = ASO/DS/%HT)
+  if(!starts.size && fromIdx==null) return;
+  const isStart = c => starts.has(c) || (fromIdx!=null && c>=fromIdx);
+  const sortedStarts = Array.from(starts).sort((a,b)=>a-b);
+  const grpIdx = c => { if(fromIdx!=null && c>=fromIdx){ return sortedStarts.filter(x=>x<fromIdx).length + (c-fromIdx) + 1; } let g=0; for(const st of sortedStarts){ if(st<=c) g++; else break; } return g; };
+  const mark = m => { m.forEach(x=>{
+    if(x.col>0 && isStart(x.col)) x.cell.classList.add('gs');
+    if(x.cs===1 && x.col>0 && grpIdx(x.col)%2===1) x.cell.classList.add('gt'); // nhóm lẻ tô nền nhẹ để dễ phân biệt
+  }); };
+  mark(headMap);
+  Array.from(table.tBodies).forEach(tb=> mark(_mapCols(Array.from(tb.rows))));
+  if(table.tFoot) mark(_mapCols(Array.from(table.tFoot.rows)));
+}
+(function(){
+  const dirty = new Set(); let timer = null;
+  function flush(){ timer = null; dirty.forEach(t=>{ try{ applyColGroups(t); }catch(e){} }); dirty.clear(); }
+  function init(){
+    document.querySelectorAll('table.table-custom').forEach(t=>dirty.add(t)); flush();
+    new MutationObserver(muts=>{
+      muts.forEach(m=>{ const el = m.target.nodeType===1 ? m.target : m.target.parentElement; const t = el && el.closest && el.closest('table.table-custom'); if(t) dirty.add(t); });
+      if(dirty.size && !timer) timer = setTimeout(flush, 50);
+    }).observe(document.body, {childList:true, subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+// ===== Ô tìm & chọn NHIỀU khách (Khách hàng, VIP) =====
+const KH_SEL = { kh: new Set(), vip: new Set() };   // tập mã KH đang chọn (rỗng = không lọc)
+const KH_NAMES = { kh: {}, vip: {} };               // mã KH -> tên (để hiện thẻ đã chọn)
+function _foldVN(s){ return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'d').toLowerCase(); }
+function _escH(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _khCand = { agg:null, usm:null, list:[] };
+function getKhCands(){
+  const agg = LAST_AGG; if(!agg) return [];
+  const usm = (document.getElementById('usmFilter')||{}).value || 'ALL';
+  if(_khCand.agg===agg && _khCand.usm===usm) return _khCand.list;
+  const list = [];
+  buildKhachHangCombinedList(agg).forEach(x=>{
+    if(!x.makh || String(x.makh).startsWith('VANG_LAI_')) return;
+    if(usm!=='ALL' && usmKey(x.usm)!==usm) return;
+    list.push({ id:String(x.makh), name:x.tenkh||x.makh, sub:`${x.makh} · ${kenhShort(x.kenh)} · ${abbrevName(x.nvbh)}` });
+  });
+  _khCand = { agg, usm, list };
+  return list;
+}
+function getVipCands(){
+  const agg = LAST_AGG; if(!agg) return [];
+  return (agg.vip||[]).map(c=>({ id:String(c.makh), name:c.tenkh||c.makh, sub:`${c.makh} · ${kenhShort(c.kenh)} · ${abbrevName(c.nvbh)}` }));
+}
+
+function khPickMount(boxId, key, getList, onChange){
+  const box = document.getElementById(boxId); if(!box) return;
+  box.innerHTML = '<div class="kp-row"><input type="search" class="kp-in" placeholder="🔍 Tìm khách (tên / mã) — chọn được nhiều" autocomplete="off"><button type="button" class="kp-clear" style="display:none;">Xóa hết</button></div><div class="kp-dd" style="display:none;"></div><div class="kp-chips"></div>';
+  const inp = box.querySelector('.kp-in'), dd = box.querySelector('.kp-dd'), chips = box.querySelector('.kp-chips'), clr = box.querySelector('.kp-clear');
+  const sel = KH_SEL[key], names = KH_NAMES[key];
+  let shown = [];
+
+  function renderChips(){
+    clr.style.display = sel.size ? '' : 'none';
+    if(!sel.size){ chips.innerHTML = ''; return; }
+    let h = `<span class="kp-count">Đang lọc ${sel.size} khách:</span>`;
+    sel.forEach(id=>{ const n = String(names[id]||id); h += `<span class="kp-chip">${_escH(n.length>22 ? n.slice(0,21)+'…' : n)}<b data-rm="${_escH(id)}">×</b></span>`; });
+    chips.innerHTML = h;
+  }
+  function renderDd(){
+    const q = _foldVN(inp.value).trim();
+    const toks = q ? q.split(/\s+/) : [];
+    const all = getList();
+    let res = all;
+    if(toks.length){ res = all.filter(it=>{ const f = it._f || (it._f = _foldVN(it.name+' '+it.id)); return toks.every(t=> f.indexOf(t)>=0); }); }
+    shown = res.slice(0, 60);
+    let h = '';
+    if(toks.length && res.length>1){
+      const allOn = res.length<=200 && res.every(it=> sel.has(it.id));
+      h += `<div class="kp-all" data-all="1">${allOn?'✖ Bỏ chọn':'✔ Chọn hết'} ${res.length>200?'200 đầu tiên':res.length+' kết quả'}</div>`;
+    }
+    if(!shown.length){ h += '<div class="kp-none">Không tìm thấy khách phù hợp</div>'; }
+    shown.forEach(it=>{
+      const on = sel.has(it.id);
+      h += `<div class="kp-it${on?' on':''}" data-id="${_escH(it.id)}"><span class="kp-ck">${on?'☑':'☐'}</span><span><strong>${_escH(it.name)}</strong><small>${_escH(it.sub)}</small></span></div>`;
+    });
+    if(res.length>60) h += `<div class="kp-none">… còn ${res.length-60} khách, gõ thêm để thu hẹp</div>`;
+    dd.innerHTML = h; dd.style.display = '';
+    dd._res = res;
+  }
+  function changed(){ renderChips(); onChange(); }
+  function toggle(id, name){
+    if(sel.has(id)) sel.delete(id); else { sel.add(id); names[id] = name; }
+  }
+  inp.addEventListener('input', renderDd);
+  inp.addEventListener('focus', renderDd);
+  dd.addEventListener('click', e=>{
+    const all = e.target.closest('.kp-all');
+    if(all){
+      const res = (dd._res||[]).slice(0,200);
+      const allOn = res.every(it=> sel.has(it.id));
+      res.forEach(it=>{ if(allOn) sel.delete(it.id); else { sel.add(it.id); names[it.id] = it.name; } });
+      renderDd(); changed(); return;
+    }
+    const it = e.target.closest('.kp-it'); if(!it) return;
+    const id = it.getAttribute('data-id'); const found = shown.find(x=>x.id===id);
+    toggle(id, found ? found.name : id);
+    renderDd(); changed();
+  });
+  chips.addEventListener('click', e=>{
+    const rm = e.target.closest('[data-rm]'); if(!rm) return;
+    sel.delete(rm.getAttribute('data-rm')); changed();
+  });
+  clr.addEventListener('click', ()=>{ sel.clear(); inp.value=''; dd.style.display='none'; changed(); });
+  document.addEventListener('pointerdown', e=>{ if(!box.contains(e.target)) dd.style.display='none'; });
+  renderChips();
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  khPickMount('khPickKh','kh', getKhCands, ()=>renderKhachHang(LAST_AGG));
+  khPickMount('khPickVip','vip', getVipCands, ()=>renderVip(LAST_AGG));
+});
 </script>
 </body>
 </html>
