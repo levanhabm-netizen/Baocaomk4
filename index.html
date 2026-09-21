@@ -244,7 +244,6 @@
 </div>
 
 <div class="sticky-top nav-quick shadow-sm mt-1" id="navQuick">
-  <button onclick="switchTab('sec-asm')">ASM Hôm nay</button>
   <button onclick="switchTab('sec-tongquan')">Tổng quan</button>
   <button onclick="switchTab('sec-luyke')">Lũy kế</button>
   <button onclick="switchTab('sec-kpi-tonghop')">KPI</button>
@@ -258,15 +257,6 @@
   <button onclick="switchTab('sec-asomoi')">ASO mới</button>
 </div>
 <div class="container-fluid px-2 mt-1">
-
-  <!-- ================= 0. ASM HÔM NAY ================= -->
-  <div id="sec-asm" class="section-tab">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="fw-bold" style="color:#f97316;">🎯 ASM HÔM NAY</div>
-      <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-asm','ASM_HomNay')" style="font-size:0.65rem;">Chụp ảnh</button>
-    </div>
-    <div id="capture-asm"><div id="asmHomeBody"></div></div>
-  </div>
 
   <!-- ================= 1. TỔNG QUAN USM ================= -->
   <div id="sec-tongquan" class="section-tab active">
@@ -3452,98 +3442,6 @@ function exportAsoMoiExcel(){
   XLSX.writeFile(wbOut, `ASO_Moi_${result.today.replace(/\//g,'-')}.xlsx`);
 }
 
-const ASM_VISIT_OK = 90;   // % ghé thăm coi là "đi đủ"
-const ASM_MIN_PLAN = 20;   // ít nhất 20 lượt khách kế hoạch mới xếp nhóm đi tuyến
-function renderAsmHome(){
-  const box = document.getElementById('asmHomeBody'); if(!box) return;
-  const latest = getLatestDate();
-  if(!latest || !RAW.length){ box.innerHTML = '<div class="text-muted text-center p-3">Chưa có dữ liệu</div>'; return; }
-  const agg = computeAggregates(()=>true);
-  const cal = getCalendarModel(), pace = getPacePct();
-  const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
-  const list = buildNvbhListByUsm(true);
-  const cut = toISO(latest), vis = {};
-  (VISIT||[]).forEach(v=>{
-    const iso = toISO(v.date); if(!iso || iso >= cut) return;   // chỉ tính các ngày đã chốt (trước ngày mới nhất)
-    const k = matchKey(v.nvbh); const b = vis[k] = vis[k] || {plan:0, order:0, no:0};
-    b.plan += v.plan; b.order += v.order; b.no += v.noOrder;
-  });
-  let vOrd = 0, vVis = 0; Object.values(vis).forEach(b=>{ vOrd += b.order; vVis += b.order + b.no; });
-  const avgSr = vVis ? vOrd/vVis*100 : null;
-  let tT = 0, tD = 0; const rows = [];
-  order.forEach(uk=> (list[uk]||[]).forEach(it=>{
-    if(!(it.target > 0)) return;
-    const ds = (agg.dsByNvbh[it.key]||0)/1e6, b = vis[it.key], visited = b ? b.order + b.no : 0;
-    tT += it.target; tD += ds;
-    rows.push({uk, name:it.name, pct:ds/it.target*100, gap:it.target*pace/100 - ds,
-      plan:b?b.plan:0, vp:(b && b.plan) ? visited/b.plan*100 : null, sr:visited ? b.order/visited*100 : null});
-  }));
-  const pc = v => v==null ? '-' : fmt1(v)+'%';
-  const remDays = cal ? cal.remainingDays : 0;
-  const perDay = remDays > 0 ? Math.max(tT - tD, 0)/remDays : null;
-  const card = (t, v, sub, c) => `<div class="col-6"><div class="kpi-card"><div class="text-muted" style="font-size:0.65rem;">${t}</div><div class="fw-bold ${c||''}" style="font-size:1.15rem;">${v}</div><div class="text-muted" style="font-size:0.6rem;">${sub||''}</div></div></div>`;
-  let h = `<div class="text-muted mb-1" style="font-size:0.65rem;">Số liệu đến ngày ${latest} · DS trước VAT</div><div class="row g-2 mb-2">`
-    + card('NHỊP THỜI GIAN', fmt1(pace)+'%', cal ? `Ngày ${cal.daysPassed}/${cal.effectiveDays}` : '')
-    + card('ĐÃ ĐẠT / CHỈ TIÊU', fmt1(tD)+' / '+fmt1(tT)+' tr', 'Hoàn thành '+fmt1(tT ? tD/tT*100 : 0)+'%', 'text-primary')
-    + card('THIẾU SO VỚI NHỊP', fmt1(Math.max(tT*pace/100 - tD, 0))+' tr', '', 'text-danger')
-    + card('CẦN MỖI NGÀY CÒN LẠI', perDay==null ? '-' : fmt1(perDay)+' tr', 'Còn '+remDays+' ngày', 'text-danger')
-    + '</div>';
-
-  // 1. NVBH dưới nhịp
-  const behind = rows.filter(r=>r.gap > 0).sort((a,b)=> (a.pct - pace) - (b.pct - pace));
-  const deep = behind.filter(r=> r.pct - pace <= -20).length;
-  h += `<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">🚨 NVBH dưới nhịp: ${behind.length} người · ${deep} người thiếu từ 20 điểm % trở lên</div>`;
-  if(!behind.length){ h += '<div class="text-success fw-bold">Tất cả NVBH đều đạt nhịp</div>'; }
-  else {
-    h += '<div style="overflow-x:auto;"><table class="table table-sm mb-0" style="font-size:0.72rem;"><thead><tr><th>NVBH</th><th class="text-center">%HT</th><th class="text-end">Thiếu (tr)</th><th class="text-center">Đi tuyến</th><th class="text-center">Ra đơn</th><th></th></tr></thead><tbody>';
-    behind.slice(0, 10).forEach(r=>{
-      const first = normalizeName(r.name).split(' ').pop();
-      const msg = `Chào ${first}, đến ${latest} DS của em đạt ${fmt1(r.pct)}% (nhịp ${fmt1(pace)}%), còn thiếu ${fmt1(r.gap)} tr so với nhịp.` + (r.vp!=null ? ` Đi tuyến ${fmt1(r.vp)}%, ra đơn ${fmt1(r.sr)}%.` : '') + ' Em tập trung chốt khách trên tuyến hôm nay nhé!';
-      h += `<tr data-usm="${r.uk}"><td><strong>${r.name}</strong><br><span class="text-muted" style="font-size:0.58rem;">${abbrevName(USM_FULLNAMES[r.uk])}</span></td><td class="text-center"><span class="badge ${r.pct-pace<=-20?'bg-danger':'bg-warning text-dark'}">${fmt1(r.pct)}%</span></td><td class="text-end fw-bold text-danger">${fmt1(r.gap)}</td><td class="text-center">${pc(r.vp)}</td><td class="text-center">${pc(r.sr)}</td><td class="text-center"><a href="https://zalo.me/?text=${encodeURIComponent(msg)}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.62rem;text-decoration:none;">Zalo</a></td></tr>`;
-    });
-    h += '</tbody></table></div>';
-    if(behind.length > 10) h += `<div class="text-muted mt-1" style="font-size:0.6rem;">Hiển thị 10 người thiếu nhiều nhất</div>`;
-  }
-  h += '</div>';
-
-  // 2. Nhóm đi tuyến
-  h += '<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">🚶 Đi tuyến × ra đơn</div>';
-  const cls = rows.filter(r=> r.plan >= ASM_MIN_PLAN && r.vp!=null && r.sr!=null);
-  if(!cls.length || avgSr==null){ h += '<div class="text-muted">Chưa có data Đi tuyến để phân nhóm</div>'; }
-  else {
-    const G = [
-      ['🟢 Đi đủ + ra đơn tốt', r=> r.vp>=ASM_VISIT_OK && r.sr>=avgSr],
-      ['🟡 Đi đủ + ra đơn thấp', r=> r.vp>=ASM_VISIT_OK && r.sr<avgSr],
-      ['🟠 Đi thiếu + ra đơn tốt', r=> r.vp<ASM_VISIT_OK && r.sr>=avgSr],
-      ['🔴 Đi thiếu + ra đơn thấp', r=> r.vp<ASM_VISIT_OK && r.sr<avgSr]
-    ];
-    G.forEach(([t, f])=>{
-      const m = cls.filter(f);
-      h += `<div class="mb-1"><strong>${t}: ${m.length}</strong>${m.length ? '<br><span class="text-muted" style="font-size:0.65rem;">'+m.map(r=>r.name+' ('+fmt0(r.vp)+'% · '+fmt0(r.sr)+'%)').join(' · ')+'</span>' : ''}</div>`;
-    });
-    h += `<div class="text-muted" style="font-size:0.6rem;">Đi đủ = ghé thăm từ ${ASM_VISIT_OK}%. Ra đơn tốt = từ mức trung bình khu vực (${fmt1(avgSr)}%). Tính đến trước ngày ${latest}, NVBH có dưới ${ASM_MIN_PLAN} lượt kế hoạch không xếp nhóm.</div>`;
-  }
-  h += '</div>';
-
-  // 3. VIP trên tuyến hôm nay chưa lên đơn
-  const dow = new Date().getDay(), thu = dow===0 ? 'CN' : String(dow+1);
-  const vip = (agg.vip||[]).filter(c=> (c.thuList||[]).includes(thu)).sort((a,b)=> (b.dsT08||0) - (a.dsT08||0));
-  h += `<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">⭐ VIP có tuyến hôm nay, chưa lên đơn T09: ${vip.length} khách${vip.length ? ' · DS T08 của nhóm này '+fmt1(vip.reduce((s,c)=>s+(c.dsT08||0),0))+' tr' : ''}</div>`;
-  if(!vip.length){ h += '<div class="text-success fw-bold">Không có VIP nào rớt trên tuyến hôm nay</div>'; }
-  else {
-    h += '<table class="table table-sm mb-0" style="font-size:0.72rem;"><tbody>';
-    vip.slice(0, 8).forEach(c=>{
-      h += `<tr data-usm="${usmKey(c.usm)}"><td><strong>${c.tenkh||''}</strong><br><span class="text-muted" style="font-size:0.58rem;">${abbrevName(c.nvbh)} · ${abbrevName(c.usm)}</span></td><td class="text-end fw-bold text-danger">${fmt1(c.dsT08)} tr</td></tr>`;
-    });
-    h += '</tbody></table>';
-    if(vip.length > 8) h += `<div class="text-muted mt-1" style="font-size:0.6rem;">Hiển thị 8 khách DS T08 cao nhất, danh sách đủ ở tab VIP</div>`;
-  }
-  h += '</div>';
-  box.innerHTML = h;
-  const usmSel = document.getElementById('usmFilter');
-  if(usmSel && usmSel.value !== 'ALL') box.querySelectorAll('[data-usm]').forEach(el=>{ el.style.display = el.getAttribute('data-usm')===usmSel.value ? '' : 'none'; });
-}
-
 function resetLocalCache(){
   if(!confirm('Xóa Bán hàng + Đi tuyến đã lưu trên máy này và tải lại mới từ Cloud?')) return;
   const keys = [RAW_KEY, VISIT_KEY, META_KEY];
@@ -3583,7 +3481,6 @@ function applyGlobalFilter(){
   renderTuyenDs(agg);
   renderWwStats();
   renderHomnay();
-  try{ renderAsmHome(); }catch(e){ console.log("ASM Hôm nay:", e); }
   renderAsoMoi();
   renderBanlaiList();
   renderAlertsAndRanking(agg);
