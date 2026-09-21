@@ -208,6 +208,10 @@
             <i class="fa-solid fa-chart-line"></i> 8. Doanh Số Nền (RR Q2)
           </button>
           <input type="file" id="baseFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleBaseUpload(event)">
+
+          <button class="btn-upload-compact" onclick="resetLocalCache()" style="background-color: #64748b; color: #fff;">
+            <i class="fa-solid fa-broom"></i> 9. Xóa dữ liệu cũ lưu trên máy
+          </button>
           
         </div>
       </details>
@@ -240,6 +244,7 @@
 </div>
 
 <div class="sticky-top nav-quick shadow-sm mt-1" id="navQuick">
+  <button onclick="switchTab('sec-asm')">ASM Hôm nay</button>
   <button onclick="switchTab('sec-tongquan')">Tổng quan</button>
   <button onclick="switchTab('sec-luyke')">Lũy kế</button>
   <button onclick="switchTab('sec-kpi-tonghop')">KPI</button>
@@ -253,6 +258,15 @@
   <button onclick="switchTab('sec-asomoi')">ASO mới</button>
 </div>
 <div class="container-fluid px-2 mt-1">
+
+  <!-- ================= 0. ASM HÔM NAY ================= -->
+  <div id="sec-asm" class="section-tab">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-bold" style="color:#f97316;">🎯 ASM HÔM NAY</div>
+      <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-asm','ASM_HomNay')" style="font-size:0.65rem;">Chụp ảnh</button>
+    </div>
+    <div id="capture-asm"><div id="asmHomeBody"></div></div>
+  </div>
 
   <!-- ================= 1. TỔNG QUAN USM ================= -->
   <div id="sec-tongquan" class="section-tab active">
@@ -1274,7 +1288,7 @@ function handleRawUpload(event){
         const parsed = parseRawWorkbook(wb);
         if(parsed.length===0){ alert('Không tìm thấy dòng dữ liệu hợp lệ (kiểm tra cột Tên ASM = "Lê Văn Hà")'); saveMeta(); return; }
         RAW = parsed;
-        localStorage.setItem(RAW_KEY, JSON.stringify(rawToCompact(RAW)));
+        _safeStore(RAW_KEY, JSON.stringify(rawToCompact(RAW)));
         let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
         meta.rawName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
         saveMeta(); rebuildDateOptions(); applyGlobalFilter();
@@ -1286,7 +1300,14 @@ function handleRawUpload(event){
 // HÀM MỚI: Kéo ĐỒNG THỜI Bán Hàng (Nút 1) & Đi Tuyến (Nút 6)
 let _cloudSyncing = false;
 const CLOUD_URL = 'https://script.google.com/macros/s/AKfycbwZmOuraZ73w1fLW3O2stEZmfxVx6UXmZeo75sDlVn-L3wzipKub1vMisQQGFC5LClu-Q/exec';
-function _safeStore(key, val){ try{ localStorage.setItem(key, val); }catch(e){} } // đầy bộ nhớ thì bỏ qua, data vẫn dùng được trong phiên
+function _safeStore(key, val){
+  // Lỗi lưu (đầy bộ nhớ): xóa bản cũ rồi thử lại; vẫn lỗi thì để trống để lần mở sau tải lại từ Cloud, KHÔNG để bản cũ sống lại
+  try{ localStorage.setItem(key, val); return true; }
+  catch(e){
+    try{ localStorage.removeItem(key); localStorage.setItem(key, val); return true; }
+    catch(e2){ try{ localStorage.removeItem(key); }catch(e3){} window.__storeFull = true; return false; }
+  }
+}
 // Tải JSON từ Cloud: thử tối đa 2 lần (lần 2 thêm tham số chống cache), chờ tối đa 120 giây/lần, báo lỗi rõ nguyên nhân
 async function _cloudFetch(say, label){
   let lastErr = null;
@@ -1296,8 +1317,8 @@ async function _cloudFetch(say, label){
     const tm = ctrl ? setTimeout(()=>ctrl.abort(), 120000) : null;
     const tick = setInterval(()=> say(`⏳ ${label} Cloud… ${Math.round((Date.now()-t0)/1000)}s${attempt>1?' (thử lại)':''}`), 1000);
     try{
-      const url = attempt===1 ? CLOUD_URL : CLOUD_URL + '?t=' + Date.now();
-      const opt = {}; if(ctrl) opt.signal = ctrl.signal; if(attempt>1) opt.cache = 'no-store';
+      const url = CLOUD_URL + '?t=' + Date.now();
+      const opt = { cache: 'no-store' }; if(ctrl) opt.signal = ctrl.signal;
       const res = await fetch(url, opt);
       if(!res.ok) throw new Error('máy chủ trả mã ' + res.status);
       const txt = await res.text();
@@ -1384,7 +1405,9 @@ async function handleCloudSync(opts) {
 
     const now = new Date();
     const hhmm = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    say(`✅ Đồng bộ ${hhmm} · Bán hàng ${countRaw} · Đi tuyến ${countVisit}`);
+    const warn = ((rawList.length>1 && countRaw===0) || (visitList.length>1 && countVisit===0) ? ' ⚠️ Cloud có data nhưng không đọc được dòng nào, đang giữ data cũ' : '')
+               + (window.__storeFull ? ' ⚠️ Bộ nhớ máy đầy, mở lại trang sẽ tải lại từ Cloud' : '');
+    say(`✅ Đồng bộ ${hhmm} · Bán hàng ${countRaw} · Đi tuyến ${countVisit}${warn}`);
     notify(`Đã nạp thành công từ Cloud:\n- Báo cáo Đi Tuyến: ${countVisit} dòng\n- Data Bán Hàng: ${countRaw} dòng`);
 
   } catch (err) {
@@ -1405,7 +1428,7 @@ function handleRouteUpload(event){
       const parsed = parseRouteWorkbook(wb);
       if(parsed.length===0){ alert('Không tìm thấy dòng dữ liệu hợp lệ trong sheet "Danh sách tuyến"'); return; }
       ROUTE = parsed;
-      localStorage.setItem(ROUTE_KEY, JSON.stringify(ROUTE));
+      _safeStore(ROUTE_KEY, JSON.stringify(ROUTE));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.routeName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -1422,7 +1445,7 @@ function handleSnUpload(event){
       const parsed = parseSnWorkbook(wb);
       if(parsed.length===0){ alert('Không tìm thấy mã sản phẩm trong file danh mục.'); return; }
       SN_SKUS = new Set(parsed);
-      localStorage.setItem(SN_KEY, JSON.stringify(parsed));
+      _safeStore(SN_KEY, JSON.stringify(parsed));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.snName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -1438,7 +1461,7 @@ function handleTargetUpload(event){
     try{
       const parsed = parseTargetsWorkbook(wb);
       TARGETS = parsed;
-      localStorage.setItem(TARGET_KEY, JSON.stringify(TARGETS));
+      _safeStore(TARGET_KEY, JSON.stringify(TARGETS));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.targetName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -1455,8 +1478,8 @@ function handleMasterUpload(event){
       const parsed = parseMasterWorkbook(wb);
       SKU_KPI = parsed.kpi;
       SKU_CAT = parsed.cat;
-      localStorage.setItem(MASTER_KEY, JSON.stringify(SKU_KPI));
-      localStorage.setItem(MASTER_CAT_KEY, JSON.stringify(SKU_CAT));
+      _safeStore(MASTER_KEY, JSON.stringify(SKU_KPI));
+      _safeStore(MASTER_CAT_KEY, JSON.stringify(SKU_CAT));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.masterName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -1558,7 +1581,7 @@ function handleVisitUpload(event){
     if(err){ alert('Lỗi đọc file: '+err.message); return; }
     try{
       VISIT = parseVisitWorkbook(wb);
-      localStorage.setItem(VISIT_KEY, JSON.stringify(VISIT));
+      _safeStore(VISIT_KEY, JSON.stringify(VISIT));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.visitName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -1625,7 +1648,7 @@ function handleWwUpload(event){
         if(!existingKeys.has(key)){ WW.push(r); existingKeys.add(key); added++; }
       });
       WW = WW.slice(-8000);
-      localStorage.setItem(WW_KEY, JSON.stringify(WW));
+      _safeStore(WW_KEY, JSON.stringify(WW));
       let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
       meta.wwName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
       saveMeta(); applyGlobalFilter();
@@ -3429,6 +3452,108 @@ function exportAsoMoiExcel(){
   XLSX.writeFile(wbOut, `ASO_Moi_${result.today.replace(/\//g,'-')}.xlsx`);
 }
 
+const ASM_VISIT_OK = 90;   // % ghé thăm coi là "đi đủ"
+const ASM_MIN_PLAN = 20;   // ít nhất 20 lượt khách kế hoạch mới xếp nhóm đi tuyến
+function renderAsmHome(){
+  const box = document.getElementById('asmHomeBody'); if(!box) return;
+  const latest = getLatestDate();
+  if(!latest || !RAW.length){ box.innerHTML = '<div class="text-muted text-center p-3">Chưa có dữ liệu</div>'; return; }
+  const agg = computeAggregates(()=>true);
+  const cal = getCalendarModel(), pace = getPacePct();
+  const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
+  const list = buildNvbhListByUsm(true);
+  const cut = toISO(latest), vis = {};
+  (VISIT||[]).forEach(v=>{
+    const iso = toISO(v.date); if(!iso || iso >= cut) return;   // chỉ tính các ngày đã chốt (trước ngày mới nhất)
+    const k = matchKey(v.nvbh); const b = vis[k] = vis[k] || {plan:0, order:0, no:0};
+    b.plan += v.plan; b.order += v.order; b.no += v.noOrder;
+  });
+  let vOrd = 0, vVis = 0; Object.values(vis).forEach(b=>{ vOrd += b.order; vVis += b.order + b.no; });
+  const avgSr = vVis ? vOrd/vVis*100 : null;
+  let tT = 0, tD = 0; const rows = [];
+  order.forEach(uk=> (list[uk]||[]).forEach(it=>{
+    if(!(it.target > 0)) return;
+    const ds = (agg.dsByNvbh[it.key]||0)/1e6, b = vis[it.key], visited = b ? b.order + b.no : 0;
+    tT += it.target; tD += ds;
+    rows.push({uk, name:it.name, pct:ds/it.target*100, gap:it.target*pace/100 - ds,
+      plan:b?b.plan:0, vp:(b && b.plan) ? visited/b.plan*100 : null, sr:visited ? b.order/visited*100 : null});
+  }));
+  const pc = v => v==null ? '-' : fmt1(v)+'%';
+  const remDays = cal ? cal.remainingDays : 0;
+  const perDay = remDays > 0 ? Math.max(tT - tD, 0)/remDays : null;
+  const card = (t, v, sub, c) => `<div class="col-6"><div class="kpi-card"><div class="text-muted" style="font-size:0.65rem;">${t}</div><div class="fw-bold ${c||''}" style="font-size:1.15rem;">${v}</div><div class="text-muted" style="font-size:0.6rem;">${sub||''}</div></div></div>`;
+  let h = `<div class="text-muted mb-1" style="font-size:0.65rem;">Số liệu đến ngày ${latest} · DS trước VAT</div><div class="row g-2 mb-2">`
+    + card('NHỊP THỜI GIAN', fmt1(pace)+'%', cal ? `Ngày ${cal.daysPassed}/${cal.effectiveDays}` : '')
+    + card('ĐÃ ĐẠT / CHỈ TIÊU', fmt1(tD)+' / '+fmt1(tT)+' tr', 'Hoàn thành '+fmt1(tT ? tD/tT*100 : 0)+'%', 'text-primary')
+    + card('THIẾU SO VỚI NHỊP', fmt1(Math.max(tT*pace/100 - tD, 0))+' tr', '', 'text-danger')
+    + card('CẦN MỖI NGÀY CÒN LẠI', perDay==null ? '-' : fmt1(perDay)+' tr', 'Còn '+remDays+' ngày', 'text-danger')
+    + '</div>';
+
+  // 1. NVBH dưới nhịp
+  const behind = rows.filter(r=>r.gap > 0).sort((a,b)=> (a.pct - pace) - (b.pct - pace));
+  const deep = behind.filter(r=> r.pct - pace <= -20).length;
+  h += `<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">🚨 NVBH dưới nhịp: ${behind.length} người · ${deep} người thiếu từ 20 điểm % trở lên</div>`;
+  if(!behind.length){ h += '<div class="text-success fw-bold">Tất cả NVBH đều đạt nhịp</div>'; }
+  else {
+    h += '<div style="overflow-x:auto;"><table class="table table-sm mb-0" style="font-size:0.72rem;"><thead><tr><th>NVBH</th><th class="text-center">%HT</th><th class="text-end">Thiếu (tr)</th><th class="text-center">Đi tuyến</th><th class="text-center">Ra đơn</th><th></th></tr></thead><tbody>';
+    behind.slice(0, 10).forEach(r=>{
+      const first = normalizeName(r.name).split(' ').pop();
+      const msg = `Chào ${first}, đến ${latest} DS của em đạt ${fmt1(r.pct)}% (nhịp ${fmt1(pace)}%), còn thiếu ${fmt1(r.gap)} tr so với nhịp.` + (r.vp!=null ? ` Đi tuyến ${fmt1(r.vp)}%, ra đơn ${fmt1(r.sr)}%.` : '') + ' Em tập trung chốt khách trên tuyến hôm nay nhé!';
+      h += `<tr data-usm="${r.uk}"><td><strong>${r.name}</strong><br><span class="text-muted" style="font-size:0.58rem;">${abbrevName(USM_FULLNAMES[r.uk])}</span></td><td class="text-center"><span class="badge ${r.pct-pace<=-20?'bg-danger':'bg-warning text-dark'}">${fmt1(r.pct)}%</span></td><td class="text-end fw-bold text-danger">${fmt1(r.gap)}</td><td class="text-center">${pc(r.vp)}</td><td class="text-center">${pc(r.sr)}</td><td class="text-center"><a href="https://zalo.me/?text=${encodeURIComponent(msg)}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.62rem;text-decoration:none;">Zalo</a></td></tr>`;
+    });
+    h += '</tbody></table></div>';
+    if(behind.length > 10) h += `<div class="text-muted mt-1" style="font-size:0.6rem;">Hiển thị 10 người thiếu nhiều nhất</div>`;
+  }
+  h += '</div>';
+
+  // 2. Nhóm đi tuyến
+  h += '<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">🚶 Đi tuyến × ra đơn</div>';
+  const cls = rows.filter(r=> r.plan >= ASM_MIN_PLAN && r.vp!=null && r.sr!=null);
+  if(!cls.length || avgSr==null){ h += '<div class="text-muted">Chưa có data Đi tuyến để phân nhóm</div>'; }
+  else {
+    const G = [
+      ['🟢 Đi đủ + ra đơn tốt', r=> r.vp>=ASM_VISIT_OK && r.sr>=avgSr],
+      ['🟡 Đi đủ + ra đơn thấp', r=> r.vp>=ASM_VISIT_OK && r.sr<avgSr],
+      ['🟠 Đi thiếu + ra đơn tốt', r=> r.vp<ASM_VISIT_OK && r.sr>=avgSr],
+      ['🔴 Đi thiếu + ra đơn thấp', r=> r.vp<ASM_VISIT_OK && r.sr<avgSr]
+    ];
+    G.forEach(([t, f])=>{
+      const m = cls.filter(f);
+      h += `<div class="mb-1"><strong>${t}: ${m.length}</strong>${m.length ? '<br><span class="text-muted" style="font-size:0.65rem;">'+m.map(r=>r.name+' ('+fmt0(r.vp)+'% · '+fmt0(r.sr)+'%)').join(' · ')+'</span>' : ''}</div>`;
+    });
+    h += `<div class="text-muted" style="font-size:0.6rem;">Đi đủ = ghé thăm từ ${ASM_VISIT_OK}%. Ra đơn tốt = từ mức trung bình khu vực (${fmt1(avgSr)}%). Tính đến trước ngày ${latest}, NVBH có dưới ${ASM_MIN_PLAN} lượt kế hoạch không xếp nhóm.</div>`;
+  }
+  h += '</div>';
+
+  // 3. VIP trên tuyến hôm nay chưa lên đơn
+  const dow = new Date().getDay(), thu = dow===0 ? 'CN' : String(dow+1);
+  const vip = (agg.vip||[]).filter(c=> (c.thuList||[]).includes(thu)).sort((a,b)=> (b.dsT08||0) - (a.dsT08||0));
+  h += `<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">⭐ VIP có tuyến hôm nay, chưa lên đơn T09: ${vip.length} khách${vip.length ? ' · DS T08 của nhóm này '+fmt1(vip.reduce((s,c)=>s+(c.dsT08||0),0))+' tr' : ''}</div>`;
+  if(!vip.length){ h += '<div class="text-success fw-bold">Không có VIP nào rớt trên tuyến hôm nay</div>'; }
+  else {
+    h += '<table class="table table-sm mb-0" style="font-size:0.72rem;"><tbody>';
+    vip.slice(0, 8).forEach(c=>{
+      h += `<tr data-usm="${usmKey(c.usm)}"><td><strong>${c.tenkh||''}</strong><br><span class="text-muted" style="font-size:0.58rem;">${abbrevName(c.nvbh)} · ${abbrevName(c.usm)}</span></td><td class="text-end fw-bold text-danger">${fmt1(c.dsT08)} tr</td></tr>`;
+    });
+    h += '</tbody></table>';
+    if(vip.length > 8) h += `<div class="text-muted mt-1" style="font-size:0.6rem;">Hiển thị 8 khách DS T08 cao nhất, danh sách đủ ở tab VIP</div>`;
+  }
+  h += '</div>';
+  box.innerHTML = h;
+  const usmSel = document.getElementById('usmFilter');
+  if(usmSel && usmSel.value !== 'ALL') box.querySelectorAll('[data-usm]').forEach(el=>{ el.style.display = el.getAttribute('data-usm')===usmSel.value ? '' : 'none'; });
+}
+
+function resetLocalCache(){
+  if(!confirm('Xóa Bán hàng + Đi tuyến đã lưu trên máy này và tải lại mới từ Cloud?')) return;
+  const keys = [RAW_KEY, VISIT_KEY, META_KEY];
+  if(confirm('Xóa luôn cả Tuyến, Chỉ tiêu, DM Sữa nước, Master, WW, Doanh số nền đã nạp tay (quay về bản mặc định trong file)?')){
+    keys.push(ROUTE_KEY, SN_KEY, TARGET_KEY, MASTER_KEY, MASTER_CAT_KEY, WW_KEY, BASE_KEY);
+  }
+  keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  location.reload();
+}
+
 function applyGlobalFilter(){
   const pred = getSelectedDatePredicate();
   const agg = computeAggregates(pred);
@@ -3458,6 +3583,7 @@ function applyGlobalFilter(){
   renderTuyenDs(agg);
   renderWwStats();
   renderHomnay();
+  try{ renderAsmHome(); }catch(e){ console.log("ASM Hôm nay:", e); }
   renderAsoMoi();
   renderBanlaiList();
   renderAlertsAndRanking(agg);
