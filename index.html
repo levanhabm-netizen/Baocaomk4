@@ -1726,10 +1726,10 @@ function rebuildDateOptions(){
   const sel = document.getElementById('dateFilter');
   const dates = Array.from(new Set(RAW.map(r=>r.ngay).filter(Boolean)));
   dates.sort((a,b)=> toISO(a) < toISO(b) ? 1 : -1);
-  const totalAll = RAW.filter(r=>norm(r.tt)===norm(APPROVED_STATUS) && !isCrossSellRow(r)).reduce((s,r)=>s+(r.dt||0),0)/1e6;
+  const totalAll = RAW.filter(r=>statusOk(r.tt) && !isCrossSellRow(r)).reduce((s,r)=>s+(r.dt||0),0)/1e6;
   let html = `<option value="ALL">📈 Lũy Kế Toàn Kỳ (${fmt1(totalAll)} tr)</option>`;
   dates.forEach(d=>{
-    const sum = RAW.filter(r=>norm(r.tt)===norm(APPROVED_STATUS) && r.ngay===d && !isCrossSellRow(r)).reduce((s,r)=>s+(r.dt||0),0)/1e6;
+    const sum = RAW.filter(r=>statusOk(r.tt) && r.ngay===d && !isCrossSellRow(r)).reduce((s,r)=>s+(r.dt||0),0)/1e6;
     html += `<option value="${d}">📅 Ngày ${d} (${fmt1(sum)} tr)</option>`;
   });
   html += `<option value="CUSTOM">⚙️ Tùy chọn: Từ ngày ... Đến ngày ...</option>`;
@@ -1740,8 +1740,12 @@ function rebuildDateOptions(){
 
 // ---------- AGGREGATION ----------
 const REJECTED_STATUS = 'Từ chối';
+const CANCELLED_STATUS = 'Hủy';   // Hủy: không tính vào cả Đã duyệt lẫn Tổng
+const RETURNED_STATUS = 'Đã trả'; // DMS gộp Đã trả vào cùng nhóm Đã duyệt
 function statusOk(tt, includeAllExceptRejected){
-  return includeAllExceptRejected ? norm(tt)!==norm(REJECTED_STATUS) : norm(tt)===norm(APPROVED_STATUS);
+  const t = norm(tt);
+  if(includeAllExceptRejected) return t!==norm(REJECTED_STATUS) && t!==norm(CANCELLED_STATUS);
+  return t===norm(APPROVED_STATUS) || t===norm(RETURNED_STATUS);
 }
 // SKU sữa nước (danh sách Bán chéo): chỉ phục vụ data Bán chéo, KHÔNG đếm vào bất kỳ ASO nào
 function isCrossSellRow(r){ return SN_SKUS.has(r.sku) && !(r.npp && norm(r.npp).includes(norm(HUE_PHUONG_NPP))); }
@@ -2025,7 +2029,7 @@ function renderActiveDays(){
   const dayNum = cal ? cal.daysPassed : 0; // số ngày bán hàng thực tế đã qua (đã trừ Chủ Nhật + ngày lễ)
   const todayDay = cal ? cal.todayDay : 0;
   const stdDays = new Set(cal ? cal.sellingDays : []);
-  const approved = RAW.filter(r=> norm(r.tt)===norm(APPROVED_STATUS) && r.ngay && (r.dt||0)>0 && !isCrossSellRow(r)
+  const approved = RAW.filter(r=> statusOk(r.tt) && r.ngay && (r.dt||0)>0 && !isCrossSellRow(r)
     && Number(r.ngay.split('/')[0]) <= todayDay          // chỉ tính đến đúng ngày hôm nay, không tính ngày sau đó
     && stdDays.has(Number(r.ngay.split('/')[0])));       // chỉ tính ngày chuẩn (T2–T7, không lễ) để mẫu số khớp
   const daysByNvbh = {};
@@ -2317,7 +2321,7 @@ function renderKpiAsoChart(){
   const cat = document.getElementById('chartKpiSelect').value;
   const usmSel = document.getElementById('chartUsmSelect').value;
 
-  const approved = RAW.filter(r=> norm(r.tt)===norm(APPROVED_STATUS) && r.ngay
+  const approved = RAW.filter(r=> statusOk(r.tt) && r.ngay
     && SKU_KPI[r.sku]===cat
     && (usmSel==='ALL' || usmKey(r.usm)===usmSel));
 
@@ -2661,7 +2665,7 @@ function getCalendarModel(){
 
 let runRateChartInstance = null;
 function renderRunRateChart(){
-  const approved = RAW.filter(r=>norm(r.tt)===norm(APPROVED_STATUS) && r.ngay);
+  const approved = RAW.filter(r=>statusOk(r.tt) && r.ngay);
   if(!approved.length){ document.getElementById('runRateSummary').innerText = 'Chưa có dữ liệu.'; return; }
 
   const totalTarget = Object.values(TARGETS.usm||{}).reduce((s,v)=>s+(v.Total||0),0);
@@ -3527,27 +3531,28 @@ function renderKhToday(){
   const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const rows = today ? RAW.filter(r=> r.ngay===today && !isCrossSellRow(r)) : [];
   if(!rows.length){ box.innerHTML = '<div class="text-muted text-center p-3">Chưa có đơn nào'+(today?' ngày '+today:'')+'</div>'; return; }
-  const isRej = st => norm(st)===norm(REJECTED_STATUS), isOk = st => norm(st)===norm(APPROVED_STATUS);
+  // Đã duyệt (gộp cả Đã trả) — khớp cách DMS tính "Thực hiện (đã duyệt)". Hủy không tính vào Tổng.
+  const isRej = st => norm(st)===norm(REJECTED_STATUS), isCancel = st => norm(st)===norm(CANCELLED_STATUS), isOk = st => statusOk(st);
   const stAgg = {}, kh = {};
   rows.forEach(r=>{
-    const st = r.tt || '(Trống)', ds = r.dt||0;
+    const st = r.tt || '(Trống)', ds = r.dtc||0;   // doanh số liên quan khách hàng: dùng Thành tiền có giảm giá
     const a = stAgg[st] = stAgg[st] || {ds:0, set:new Set()}; a.ds += ds; a.set.add(r.makh);
     const k = kh[r.makh] = kh[r.makh] || {ten:r.tenkh, nvbh:r.nvbh, usm:r.usm, st:{}, tot:0};
-    k.st[st] = (k.st[st]||0) + ds; if(!isRej(st)) k.tot += ds;
+    k.st[st] = (k.st[st]||0) + ds; if(!isRej(st) && !isCancel(st)) k.tot += ds;
   });
-  const w = s => isOk(s) ? 0 : (isRej(s) ? 2 : 1);
+  const w = s => isOk(s) ? 0 : (isRej(s)||isCancel(s) ? 2 : 1);
   const stList = Object.keys(stAgg).sort((a,b)=> w(a)-w(b) || stAgg[b].ds - stAgg[a].ds);
-  const badge = s => isOk(s) ? 'bg-success' : (isRej(s) ? 'bg-danger' : 'bg-warning text-dark');
-  const totalAll = stList.filter(s=>!isRej(s)).reduce((t,s)=>t+stAgg[s].ds,0)/1e6;
+  const badge = s => isOk(s) ? 'bg-success' : ((isRej(s)||isCancel(s)) ? 'bg-danger' : 'bg-warning text-dark');
+  const totalAll = stList.filter(s=>!isRej(s) && !isCancel(s)).reduce((t,s)=>t+stAgg[s].ds,0)/1e6;
   const okDs = stList.filter(isOk).reduce((t,s)=>t+stAgg[s].ds,0)/1e6;
   const list = Object.keys(kh).map(k=>Object.assign({makh:k}, kh[k])).sort((a,b)=> b.tot - a.tot);
   const nBuy = list.filter(k=>k.tot>0).length;
   const card = (t,v,sub,c) => `<div class="col-6"><div class="kpi-card"><div class="text-muted" style="font-size:0.65rem;">${t}</div><div class="fw-bold ${c||''}" style="font-size:1.15rem;">${v}</div><div class="text-muted" style="font-size:0.6rem;">${sub||''}</div></div></div>`;
-  let h = `<div class="text-muted mb-1" style="font-size:0.65rem;">Ngày ${today} · DS trước VAT · toàn khu vực</div><div class="row g-2 mb-2">`
-    + card('TỔNG DS (TRỪ TỪ CHỐI)', fmt1(totalAll)+' tr', 'Mọi trạng thái, không tính Từ chối', 'text-primary')
-    + card('KHÁCH CÓ ĐƠN', nBuy, 'Không tính khách chỉ có đơn Từ chối')
-    + card('ĐÃ DUYỆT', fmt1(okDs)+' tr', (stAgg[stList.find(isOk)]||{set:new Set()}).set.size + ' khách', 'text-success')
-    + card('CHƯA DUYỆT', fmt1(totalAll-okDs)+' tr', 'Chờ xác nhận, đã xác nhận, chưa duyệt...', 'text-danger')
+  let h = `<div class="text-muted mb-1" style="font-size:0.65rem;">Ngày ${today} · DS thành tiền có giảm giá (khác cơ sở DS trước VAT ở các tab khác) · toàn khu vực</div><div class="row g-2 mb-2">`
+    + card('TỔNG DS (TRỪ TỪ CHỐI, HỦY)', fmt1(totalAll)+' tr', 'Đã duyệt + Đã trả + chưa xử lý', 'text-primary')
+    + card('KHÁCH CÓ ĐƠN', nBuy, 'Không tính khách chỉ có đơn Từ chối/Hủy')
+    + card('ĐÃ DUYỆT', fmt1(okDs)+' tr', 'Gồm cả đơn Đã trả · khớp DMS', 'text-success')
+    + card('CHƯA DUYỆT', fmt1(totalAll-okDs)+' tr', 'Chờ xác nhận, đã xác nhận...', 'text-danger')
     + '</div>';
   h += '<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">Theo trạng thái đơn</div><table class="table table-sm mb-0" style="font-size:0.72rem;"><thead><tr><th>Trạng thái</th><th class="text-center">Số khách</th><th class="text-end">DS (tr)</th></tr></thead><tbody>';
   stList.forEach(s=>{ h += `<tr><td><span class="badge ${badge(s)}">${esc(s)}</span></td><td class="text-center">${stAgg[s].set.size}</td><td class="text-end fw-bold">${fmt1(stAgg[s].ds/1e6)}</td></tr>`; });
@@ -4254,7 +4259,7 @@ function _declActuals(){
   if(_declCache.raw===RAW && _declCache.kpi===SKU_KPI) return _declCache.map;
   const map = {};
   RAW.forEach(r=>{
-    if(norm(r.tt)!==norm(APPROVED_STATUS)) return;
+    if(!statusOk(r.tt)) return;   // Đã duyệt + Đã trả
     if(norm(r.kenh)==='GTPH' || isCrossSellRow(r)) return;
     const cat = SKU_KPI[r.sku]; if(!cat) return;
     const a = map[r.makh] || (map[r.makh] = {cats:{}, tong:0});
