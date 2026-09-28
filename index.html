@@ -195,6 +195,10 @@
             <i class="fa-solid fa-database"></i> 5. Master SP (KPI)
           </button>
           <input type="file" id="masterFileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleMasterUpload(event)">
+          <button class="btn-upload-compact" onclick="document.getElementById('chuoiFileInput').click()" style="background-color: #7c3aed;">
+            <i class="fa-solid fa-store"></i> 6. DS Chuỗi (SUM + DS KH)
+          </button>
+          <input type="file" id="chuoiFileInput" accept=".xlsb, .xlsx, .xls" style="display: none;" onchange="handleChuoiUpload(event)">
           
           <button class="btn-upload-compact visit" onclick="document.getElementById('visitFileInput').click()" style="background-color: #10b981;">
             <i class="fa-solid fa-person-walking-arrow-right"></i> 6. Báo Cáo Đi Tuyến
@@ -248,6 +252,7 @@
 <div class="sticky-top nav-quick shadow-sm mt-1" id="navQuick">
   <button onclick="switchTab('sec-asm')">ASM Hôm nay</button>
   <button onclick="switchTab('sec-homnay')">Hôm Nay</button>
+  <button onclick="switchTab('sec-chuoi')">Chuỗi</button>
   <button onclick="switchTab('sec-tongquan')">Tổng quan</button>
   <button onclick="switchTab('sec-luyke')">Lũy kế</button>
   <button onclick="switchTab('sec-kpi-tonghop')">KPI</button>
@@ -271,6 +276,12 @@
 
   <!-- ================= KHÁCH MUA HÔM NAY ================= -->
   
+
+  <!-- ================= CHUỖI ================= -->
+  <div id="sec-chuoi" class="section-tab">
+    <div class="fw-bold mb-2" style="color:#f97316;">🏬 TRACKING CHUỖI</div>
+    <div id="chuoiBody"></div>
+  </div>
 
   <!-- ================= 1. TỔNG QUAN USM ================= -->
   <div id="sec-tongquan" class="section-tab active">
@@ -915,6 +926,17 @@ const VISIT_KEY='BAMMK4_VISIT_V1';
 const WW_KEY='BAMMK4_WW_V1';
 const BASE_KEY='BAMMK4_BASE_V1';
 const CAMKET_KEY='BAMMK4_CAMKET_V1';
+const CHUOI_KEY='BAMMK4_CHUOI_V1';
+const CHUOI_MANUAL_KEY='BAMMK4_CHUOI_MANUAL_V1';
+const DEFAULT_CHUOI = /*__START_CHUOI__*/{"targets":{"Anh Khoa":{"muc1":42000.0,"muc2":46200.00000000001,"ytdBaoCao":16945.053335999997,"thang":[3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0,3500.0]},"Bách Hóa Tài":{"muc1":4800.0,"muc2":5280.0,"ytdBaoCao":831.1711540050001,"thang":[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0]},"Tư Hùng":{"muc1":13200.0,"muc2":14520.000000000002,"ytdBaoCao":4020.7416516225003,"thang":[1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0,1100.0]},"BẢO CHÂU":{"muc1":4800.0,"muc2":5280.0,"ytdBaoCao":478.785384,"thang":[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0]},"Bis Mart":{"muc1":52000.0,"muc2":57200.00000000001,"ytdBaoCao":9131.187256579688,"thang":[3000.0,3000.0,3500.0,4000.0,4000.0,4000.0,5000.0,5000.0,5000.0,5500.0,5000.0,5000.0]},"Shop Chí Quang":{"muc1":4800.0,"muc2":5280.0,"ytdBaoCao":1330.57304643375,"thang":[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0]},"Đào Nguyên":{"muc1":5280.0,"muc2":0,"ytdBaoCao":1794.6178559999998,"thang":[440.0,440.0,440.0,440.0,440.0,440.0,440.0,440.0,440.0,440.0,440.0,440.0]},"Khánh Hưng":{"muc1":900.0,"muc2":990.0000000000001,"ytdBaoCao":1.39677700640625,"thang":[0,0,0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"THẾ GIỚI SỮA - Cà Mau":{"muc1":900.0,"muc2":990.0000000000001,"ytdBaoCao":271.5800136075,"thang":[0,0,0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"Mẹ và Bé NAVY":{"muc1":900.0,"muc2":990.0000000000001,"ytdBaoCao":228.41424622406248,"thang":[0,0,0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"Minh Nhung":{"muc1":900.0,"muc2":990.0000000000001,"ytdBaoCao":3.242592,"thang":[0,0,0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"LINH LINH":{"muc1":2750.0,"muc2":3025.0000000000005,"ytdBaoCao":516.439584,"thang":[0,250.0,250.0,250.0,250.0,250.0,250.0,250.0,250.0,250.0,250.0,250.0]},"NGỌC OANH":{"muc1":1200.0,"muc2":1320.0,"ytdBaoCao":333.61397500359374,"thang":[100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"CHỊ Lan":{"muc1":1350.0,"muc2":1485.0000000000002,"ytdBaoCao":1152.677952,"thang":[100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,150.0,150.0,150.0]},"Quầy Thuốc Ngọc Diễm 2":{"muc1":1200.0,"muc2":1320.0,"ytdBaoCao":197.41676748257814,"thang":[100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0]},"Chị  Dung":{"muc1":7200.0,"muc2":7920.000000000001,"ytdBaoCao":2032.138368,"thang":[600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0]},"Bảo Liễu":{"muc1":7200.0,"muc2":7920.000000000001,"ytdBaoCao":2174.189904,"thang":[600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0,600.0]},"Hệ thống sữa Trí Tín":{"muc1":4800.0,"muc2":5280.0,"ytdBaoCao":1749.4194240000002,"thang":[400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0,400.0]},"Lô Thoa":{"muc1":5160.0,"muc2":5676.000000000001,"ytdBaoCao":1293.9030472148436,"thang":[430.0,430.0,430.0,430.0,430.0,430.0,430.0,430.0,430.0,430.0,430.0,430.0]},"Mẹ Và Bé Gấu":{"muc1":18000.0,"muc2":19800.0,"ytdBaoCao":6758.856843007499,"thang":[1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0,1500.0]},"Hoàng Phát":{"muc1":2000.0,"muc2":2200.0,"ytdBaoCao":0,"thang":[0,0,0,0,250.0,250.0,250.0,250.0,250.0,250.0,250.0,250.0]}},"branches":[{"chuoi":"Anh Khoa","ten":"Anh Khoa_BS","ma_phu":"CTO020001734"},{"chuoi":"Bis Mart","ten":"Bis Mart_BS","ma_phu":"STGW00003954"},{"chuoi":"Bis Mart","ten":"Bis Mart_BS","ma_phu":"STGW00006804"},{"chuoi":"Bis Mart","ten":"Bis Mart_BS","ma_phu":"STGW00011534"},{"chuoi":"Bis Mart","ten":"BIS MART MỸ XUYÊN_BS","ma_phu":"STGW00013104"},{"chuoi":"Bis Mart","ten":"Cửa hàng Mẹ và bé Bis Mart_BS","ma_phu":"HGGW00008484"},{"chuoi":"Bis Mart","ten":"BIS MART Trà Quýt_BS","ma_phu":"STGW00017384"},{"chuoi":"Bis Mart","ten":"BIS MART Ba Trinh_BS","ma_phu":"STGW00017394"},{"chuoi":"Bis Mart","ten":"BIS MART Bông Sen_BS","ma_phu":"STGW00017404"},{"chuoi":"Bis Mart","ten":"BIS MART Lịch Hội Thượng_BS","ma_phu":"STGW00017474"},{"chuoi":"Bis Mart","ten":"BIS MART Trần Đề_BS","ma_phu":"STGW00017504"},{"chuoi":"Bis Mart","ten":"BIS MART Vĩnh châu_BS","ma_phu":"STGW00017514"},{"chuoi":"Bis Mart","ten":"HTCH Mẹ Và Bé Bis Mart_BS","ma_phu":"BLUW00010514"},{"chuoi":"KC Mart","ten":"KC MART 2_BS","ma_phu":"HGGW00003194"},{"chuoi":"KC Mart","ten":"Cửa hàng Tiện Lợi KC Mart_BS","ma_phu":"HGG982011114"},{"chuoi":"KC Mart","ten":"KC Mart Gò Quao_BS","ma_phu":"KGGW00041214"},{"chuoi":"Tư Hùng","ten":"QUẦY THUỐC TƯ HÙNG_BS","ma_phu":"STG980017554"},{"chuoi":"Ngọc Uyên","ten":"SHOP NGỌC UYÊN_BS","ma_phu":"KGG982001304"},{"chuoi":"Dủ Đức","ten":"Mẹ và Bé_BS","ma_phu":"HGGW00001904"},{"chuoi":"Shop Dinh Dưỡng","ten":"Shop Sữa  Dinh Dưỡng_BS","ma_phu":"BLU983502374"},{"chuoi":"Bách Hóa Tài","ten":"B HÓA TÀI_BS","ma_phu":"STG010009994"},{"chuoi":"Bis Mart","ten":"BIS MART phường 2_BS","ma_phu":"STGW00019344"},{"chuoi":"Uyên Kim","ten":"Shop Mẹ và Bé_BS","ma_phu":"HGG982003424"},{"chuoi":"Uyên Kim","ten":"Uyên Kim 2_BS","ma_phu":"HGGW00012764"},{"chuoi":"Bảo Thu","ten":"Bảo Thu_BS","ma_phu":"STG983514344"},{"chuoi":"Bảo Thu","ten":"Bảo Thu_BS","ma_phu":"STGW00005064"},{"chuoi":"Quỳnh Lam","ten":"Shop quỳnh lam_BS","ma_phu":"KGG982025984"},{"chuoi":"Quỳnh Lam","ten":"shop sua quynh lam 2_BS","ma_phu":"KGGW00036194"},{"chuoi":"Shop Chí Quang","ten":"Chí Quang_BS","ma_phu":"BLU010002854"},{"chuoi":"Đào Nguyên","ten":"Đào Nguyên_BS","ma_phu":"BLU010006014"},{"chuoi":"Bis Mart","ten":"BiS MART  THỚI BÌNH CÀ MAU_BS","ma_phu":"CMUW00035244"},{"chuoi":"Bis Mart","ten":"HTCH Mẹ Và Bé Bis Mart_BS","ma_phu":"BLUW00010804"},{"chuoi":"Bis Mart","ten":"BíS MART Cái Nước_BS","ma_phu":"CMUW00036324"},{"chuoi":"Bis Mart","ten":"BíS MART KINH TƯ ĐÔNG HẢI_BS","ma_phu":"BLUW00011564"},{"chuoi":"Bis Mart","ten":"BíS MART Đầm Dơi_BS","ma_phu":"CMUW00037144"},{"chuoi":"Chuỗi Thế Giới Sữa Huỳnh Baby","ten":"THẾ GIỚI SỮA HUỲNH BABY_TH_BS","ma_phu":"CMUW00016744"},{"chuoi":"CH Thiên Kim","ten":"CH Thiên Kim_BS","ma_phu":"CMUW00040034"},{"chuoi":"Mẹ Và Bé Gấu","ten":"Mẹ Và Bé Gấu_BS","ma_phu":"BLUW00007594"},{"chuoi":"Lô Thoa","ten":"Lô Thoa_BS","ma_phu":"CMU010000784"},{"chuoi":"SIÊU THỊ SỮA 69","ten":"SIÊU THỊ SỮA 69_BS","ma_phu":"CMU982024864"},{"chuoi":"Shop Sữa VŨ LÂM","ten":"Shop Sữa VŨ LÂM 2_BS","ma_phu":"CMUW00039354"},{"chuoi":"Hệ thống sữa Trí Tín","ten":"TRÍ TÍN 3_BS","ma_phu":"BLUW00011614"},{"chuoi":"CHTC PHÚ HUY_TH","ten":"CHTC RẠCH GỐC_BS","ma_phu":"CMUW00007364"},{"chuoi":"HUỲNH TÂM 2","ten":"Tuấn Anh_BS","ma_phu":"CMU982029344"},{"chuoi":"BẢO CHÂU","ten":"BẢO CHÂU_BS","ma_phu":"STG010003084"},{"chuoi":"Quách Hôn","ten":"Quách Hôn 2_BS","ma_phu":"CMU010000104"},{"chuoi":"TC Gia Hân","ten":"TC Gia Hân 2_BS","ma_phu":"CMU050005354"},{"chuoi":"Nam Diệu","ten":"Nam Diệu 2 _BS","ma_phu":"CMU010006184"},{"chuoi":"NGỌC OANH","ten":"NGỌC OANH 2_BS","ma_phu":"CMU982027604"},{"chuoi":"CHỊ Lan","ten":"Quách Lan_BS","ma_phu":"CMU010009874"},{"chuoi":"LÊ THÀNH","ten":"LÊ THÀNH 2_BS","ma_phu":"CMU010002654"},{"chuoi":"THÙY DƯƠNG","ten":"Hoàng Sỉ_BS","ma_phu":"CMU010001854"},{"chuoi":"Quầy Thuốc Ngọc Diễm 2","ten":"Ngọc Diễm_BS","ma_phu":"CMUW00018684"},{"chuoi":"Hải Phong","ten":"Hải Phong_BS","ma_phu":"CMU983506124"},{"chuoi":"Ngọc Trinh","ten":"Ngọc Trinh_BS","ma_phu":"CMUW00004724"},{"chuoi":"BỐI BỐI","ten":"BỐI BỐI_BS","ma_phu":"CMU983509404"},{"chuoi":"ĐĂNG KHOA","ten":"ĐĂNG KHOA_BS","ma_phu":"CMUW00031414"},{"chuoi":"KIM PHÚC","ten":"KIM PHÚC_BS","ma_phu":"CMU010003344"},{"chuoi":"KIM TUYỀN","ten":"KIM TUYỀN_BS","ma_phu":"CMU982028524"},{"chuoi":"TRỌNG HỮU_TH","ten":"TRỌNG HỮU_TH_BS","ma_phu":"CMU983527654"},{"chuoi":"Chị  Dung","ten":"Chị  Dung_BS","ma_phu":"BLU983504684"},{"chuoi":"Bảo Liễu","ten":"Bảo Liễu_BS","ma_phu":"BLU982003084"},{"chuoi":"KIM LOAN","ten":"KIM LOAN_BS","ma_phu":"CMU010001484"},{"chuoi":"PHẠM VĂN","ten":"PHẠM VĂN_BS","ma_phu":"CMU010011494"},{"chuoi":"Lan Vi","ten":"Lan Vi_BS","ma_phu":"CMU980007984"},{"chuoi":"TÚ MỸ","ten":"TÚ MỸ_BS","ma_phu":"CMU010003474"},{"chuoi":"Tư Hùng","ten":"TƯ HÙNG 2_BS","ma_phu":"STGW00018514"},{"chuoi":"Anh Khoa","ten":"Anh Khoa 3_BS","ma_phu":"HGGW00017184"},{"chuoi":"BẢO CHÂU","ten":"BẢO CHÂU 2_BS","ma_phu":"STGW00020794"},{"chuoi":"Linh Loan","ten":"Chi Loan_BS","ma_phu":"BLUW00011144"},{"chuoi":"Linh Loan","ten":"Linh Loan_BS","ma_phu":"BLU010008254"},{"chuoi":"CHTC PHÚ HUY_TH","ten":"CHTC RẠCH GỐC_BS","ma_phu":"CMU050008314"},{"chuoi":"HUỲNH TÂM 2","ten":"Tuấn Anh_BS","ma_phu":"CMUW00018504"},{"chuoi":"Quách Hôn","ten":"Quách Hôn 2_BS","ma_phu":"CMUW00041294"},{"chuoi":"Nam Diệu","ten":"Nam Diệu 2_BS","ma_phu":"CMUW00041334"},{"chuoi":"NGỌC OANH","ten":"NGỌC OANH 2_BS","ma_phu":"CMUW00030354"},{"chuoi":"CHỊ Lan","ten":"Quách Lan_BS","ma_phu":"CMUW00041274"},{"chuoi":"Chuỗi Thế Giới Sữa Huỳnh Baby","ten":"SHOP SỮA QUỲNH BABY_BS","ma_phu":"CMUW00041484"},{"chuoi":"Hải Phong","ten":"HẢI PHONG 2_BS","ma_phu":"CMUW00018454"},{"chuoi":"Ngọc Trinh","ten":"NGOC TRINH 2_BS","ma_phu":"CMUW00041504"},{"chuoi":"ĐĂNG KHOA","ten":"Đăng Khoa 2_BS","ma_phu":"CMUW00036764"},{"chuoi":"KIM TUYỀN","ten":"KIM TUYỀN 2_BS","ma_phu":"CMUW00041384"},{"chuoi":"LINH LINH","ten":"LINH LINH_BS","ma_phu":"BLU010003224"},{"chuoi":"Bis Mart","ten":"Bis Mart Láng tròn_BS","ma_phu":"BLUW00012284"},{"chuoi":"Chuỗi Thế Giới Sữa Huỳnh Baby","ten":"Thế Giới Sữa Huỳnh BaBy Vị Thanh_BS","ma_phu":"HGGW00017354"},{"chuoi":"Mẹ và Bé NAVY","ten":"Mẹ và Bé NAVY_BS","ma_phu":"HGGW00008574"},{"chuoi":"Minh Nhung","ten":"Minh Nhung_BS","ma_phu":"HGG010000314"},{"chuoi":"Bis Mart","ten":"Bis Mart Vị Thanh_BS","ma_phu":"HGGW00017404"},{"chuoi":"Bis Mart","ten":"Bis Mart Cái Tắc_BS","ma_phu":"HGGW00017414"},{"chuoi":"Bis Mart","ten":"BIS MART CÂU TRĂNG_BS","ma_phu":"STGW00021134"},{"chuoi":"Bis Mart","ten":"BIS MART ĐAI TÂM_BS","ma_phu":"STGW00021144"},{"chuoi":"Mẹ Và Bé Gấu","ten":"Mẹ và Bé Gấu baby2_BS","ma_phu":"BLUW00012904"},{"chuoi":"Khánh Hưng","ten":"Khánh Hưng_BS","ma_phu":"STG982006274"},{"chuoi":"THẾ GIỚI SỮA - Cà Mau","ten":"THẾ GIỚI SỮA_BS","ma_phu":"CMUW00009004"},{"chuoi":"HOÀNG SA","ten":"HOÀNG SA_BS","ma_phu":"CMUW00025854"},{"chuoi":"MY BABY","ten":"MY BABY_BS","ma_phu":"CMUW00041714"},{"chuoi":"CH THẾ THANH","ten":"CH Thế Thanh_BS","ma_phu":"CMUW00042344"},{"chuoi":"Hoàng Phát","ten":"shop Hoàng Phát_BS","ma_phu":"CMUW00043134"},{"chuoi":"Hoàng Phát","ten":"Hoàng phát 2_BS","ma_phu":"CMUW00043394"},{"chuoi":"Bis Mart","ten":"BisMart QL 61_BS","ma_phu":"HGGW00018124"},{"chuoi":"Anh Khoa","ten":"ANH KHOA 4_BS","ma_phu":"HGG010000374"}]}/*__END_CHUOI__*/;
+let CHUOI = DEFAULT_CHUOI;   // {targets: {chuoi:{muc1,muc2,ytdBaoCao}}, branches:[{chuoi,ten,ma_phu}]} — nạp sẵn từ file SB_-_Weekly_KH_Chuoi_SB_W2_T7_MEKONG (21 chuỗi, 101 chi nhánh)
+try{ CHUOI = JSON.parse(localStorage.getItem(CHUOI_KEY) || 'null') || CHUOI; }catch(e){}
+function getChuoiManual(){ try{ return JSON.parse(localStorage.getItem(CHUOI_MANUAL_KEY)||'{}'); }catch(e){ return {}; } }
+function setChuoiManual(chuoi, val){
+  const m = getChuoiManual();
+  if(val===''||val==null||isNaN(val)) delete m[chuoi]; else m[chuoi] = +val;
+  _safeStore(CHUOI_MANUAL_KEY, JSON.stringify(m));
+}
 let LAST_AGG_TODAY=null;
 function getCamKet(){ try{ return JSON.parse(localStorage.getItem(CAMKET_KEY)||'{}'); }catch(e){ return {}; } }
 function setCamKet(uk, val){
@@ -3567,6 +3589,131 @@ function renderKhToday(){
   filterKhToday();
 }
 
+
+// ====== NẠP FILE "SB - Weekly KH Chuỗi": sheet SUM (chỉ tiêu theo chuỗi) + sheet "DS KH_..." (chi nhánh + mã phụ) ======
+// Ghi chú: cột được xác định theo VỊ TRÍ cố định của mẫu báo cáo tuần hiện tại.
+// Nếu công ty đổi mẫu file, cần chỉnh lại các số cột bên dưới.
+function parseChuoiWorkbook(wb){
+  const sumSheetName = wb.SheetNames.find(n=> norm(n).toUpperCase()==='SUM') || wb.SheetNames[0];
+  const dsSheetName = wb.SheetNames.find(n=> norm(n).toUpperCase().startsWith('DS KH')) || wb.SheetNames[1];
+  if(!sumSheetName || !dsSheetName) throw new Error('Không tìm thấy sheet SUM hoặc sheet DS KH trong file');
+
+  const sumRows = XLSX.utils.sheet_to_json(wb.Sheets[sumSheetName], {header:1, defval:null, raw:true});
+  const dsRows = XLSX.utils.sheet_to_json(wb.Sheets[dsSheetName], {header:1, defval:null, raw:true});
+
+  // --- Chỉ tiêu theo chuỗi (sheet SUM): cột 4=Tên chuỗi, cột 25=Mức 1 (năm 2026), cột 26=Mức 2 (năm 2026), cột 46=DS YTD theo báo cáo tuần ---
+  const targets = {};
+  sumRows.forEach(row=>{
+    if(!row || typeof row[0]!=='number') return;          // dòng dữ liệu luôn có STT là số
+    const asm = norm(row[3]), chuoi = norm(row[4]);
+    if(!chuoi || asm!==ASM_NAME) return;
+    const thang = []; for(let i=0;i<12;i++) thang.push(+row[9+i]||0);
+    targets[chuoi] = { muc1: +row[25]||0, muc2: +row[26]||0, ytdBaoCao: +row[41]||0, thang };
+  });
+  if(!Object.keys(targets).length) throw new Error('Sheet SUM: không đọc được dòng chỉ tiêu nào của ASM "'+ASM_NAME+'"');
+
+  // --- Danh sách chi nhánh (sheet DS KH): cột 5=Tên ASM, cột 6=Tên chuỗi, cột 8=Mã phụ, cột 9=Tên chi nhánh ---
+  const branches = [];
+  dsRows.forEach(row=>{
+    if(!row || typeof row[0]!=='number') return;
+    const maPhu = norm(row[8]); if(!maPhu) return;
+    const asm = norm(row[5]);
+    if(asm!==ASM_NAME) return;
+    branches.push({ chuoi: norm(row[6]), ten: norm(row[9]), ma_phu: maPhu });
+  });
+  if(!branches.length) throw new Error('Sheet DS KH: không đọc được chi nhánh nào của ASM "'+ASM_NAME+'"');
+
+  return { targets, branches };
+}
+
+function handleChuoiUpload(event){
+  const file = event.target.files[0]; if(!file) return;
+  readFileAsWorkbook(file, (err, wb)=>{
+    if(err){ alert('Lỗi đọc file: '+err.message); return; }
+    try{
+      const parsed = parseChuoiWorkbook(wb);
+      CHUOI = parsed;
+      _safeStore(CHUOI_KEY, JSON.stringify(CHUOI));
+      let meta = {}; try{meta=JSON.parse(localStorage.getItem(META_KEY)||'{}');}catch(e){}
+      meta.chuoiName = file.name; localStorage.setItem(META_KEY, JSON.stringify(meta));
+      saveMeta(); applyGlobalFilter();
+      alert('Đã nạp DS Chuỗi: '+Object.keys(CHUOI.targets).length+' chuỗi, '+CHUOI.branches.length+' chi nhánh.');
+    }catch(err){ alert('Lỗi xử lý file: '+err.message); }
+  });
+}
+
+// Tính Thực hiện live từ RAW hiện có, cộng dồn theo chuỗi qua mã phụ (khớp MACUAHANG). Chuỗi "Anh Khoa" lấy số nhập tay (NPP Hiệp Lợi không còn dữ liệu để đối chiếu).
+function computeChuoiActual(){
+  const manual = getChuoiManual();
+  const actual = {}, coverage = {}, branchTh = {};   // branchTh: ma_phu -> tr đã bán (auto, chưa cộng nhập tay)
+  Object.keys(CHUOI.targets).forEach(c=> actual[c] = manual[c]!=null ? manual[c] : 0);
+  CHUOI.branches.forEach(b=>{ coverage[b.chuoi] = coverage[b.chuoi] || {tong:0, khop:0}; coverage[b.chuoi].tong++; branchTh[b.ma_phu] = 0; });
+  RAW.forEach(r=>{
+    if(!statusOk(r.tt)) return;                      // Đã duyệt + Đã trả
+    const mk = norm(r.makh);
+    if(!(mk in branchTh)) return;
+    branchTh[mk] += (r.dtc||0)/1e6;
+  });
+  CHUOI.branches.forEach(b=>{
+    if(branchTh[b.ma_phu] > 0){ coverage[b.chuoi].khop++; if(manual[b.chuoi]==null) actual[b.chuoi] = (actual[b.chuoi]||0) + branchTh[b.ma_phu]*1e6; }
+  });
+  return { actual, coverage, manual, branchTh };
+}
+
+// Chỉ tiêu THÁNG tương ứng với tháng mới nhất trong dữ liệu Bán hàng đang nạp (không phải chỉ tiêu cả năm)
+function getChuoiMonthIdx(){
+  const latest = getLatestDate(); if(!latest) return null;
+  const p = String(latest).split('/'); if(p.length!==3) return null;
+  return (+p[1]) - 1;   // 0 = Tháng 1 ... 11 = Tháng 12
+}
+
+const CHUOI_THANG_TEN = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+function toggleChuoiBranches(c){
+  const el = document.getElementById('chuoiBr-'+c); if(!el) return;
+  el.style.display = el.style.display==='none' ? '' : 'none';
+}
+function renderChuoi(){
+  const box = document.getElementById('chuoiBody'); if(!box) return;
+  if(!CHUOI.branches.length){ box.innerHTML = '<div class="text-muted text-center p-3">Chưa nạp file DS Chuỗi (nút "Nạp DS Chuỗi" ở menu ⋯)</div>'; return; }
+  const { actual, coverage, manual, branchTh } = computeChuoiActual();
+  const monthIdx = getChuoiMonthIdx();
+  const ctOf = c => monthIdx!=null && CHUOI.targets[c].thang ? (CHUOI.targets[c].thang[monthIdx]||0) : (CHUOI.targets[c].muc1||0)/12;
+  const chuoiList = Object.keys(CHUOI.targets).sort((a,b)=> ctOf(b) - ctOf(a));
+  const chuoiKhongCoTarget = [...new Set(CHUOI.branches.map(b=>b.chuoi))].filter(c=> !CHUOI.targets[c]);
+  const soCnKhongCoTarget = CHUOI.branches.filter(b=> !CHUOI.targets[b.chuoi]).length;
+  let tongCT = 0, tongTH = 0;
+  chuoiList.forEach(c=>{ tongCT += ctOf(c); tongTH += (actual[c]/1e6)||0; });
+  const pctHT = tongCT ? tongTH/tongCT*100 : 0;
+  const card = (t,v,sub,c) => `<div class="col-6"><div class="kpi-card"><div class="text-muted" style="font-size:0.65rem;">${t}</div><div class="fw-bold ${c||''}" style="font-size:1.15rem;">${v}</div><div class="text-muted" style="font-size:0.6rem;">${sub||''}</div></div></div>`;
+  const thangLabel = monthIdx!=null ? CHUOI_THANG_TEN[monthIdx] : 'Mức1/12 (chưa xác định được tháng)';
+  let h = `<div class="text-muted mb-1" style="font-size:0.65rem;">Chỉ tiêu ${thangLabel}/2026 (theo tháng mới nhất trong dữ liệu Bán hàng) · Thực hiện tính live (thành tiền có giảm giá), Đã duyệt+Đã trả · bấm vào 1 chuỗi để xem từng chi nhánh</div><div class="row g-2 mb-2">`
+    + card(`CHỈ TIÊU (${thangLabel.toUpperCase()})`, fmt1(tongCT)+' tr')
+    + card('THỰC HIỆN', fmt1(tongTH)+' tr', '', 'text-primary')
+    + card('%HT', fmt1(pctHT)+'%', '', pctHT>=70?'text-success':'text-danger')
+    + card('SỐ CHUỖI ĐANG THEO DÕI', chuoiList.length)
+    + '</div>';
+
+  h += `<div class="kpi-card mb-2"><div class="fw-bold mb-1" style="font-size:0.8rem;">Theo từng chuỗi</div><div style="overflow-x:auto;"><table class="table table-sm mb-0" style="font-size:0.72rem;"><thead><tr><th>Chuỗi</th><th class="text-end">CT ${thangLabel} (tr)</th><th class="text-end">TH (tr)</th><th class="text-center">%HT</th><th class="text-center">Chi nhánh khớp</th><th class="text-center">Nhập tay</th></tr></thead><tbody>`;
+  chuoiList.forEach(c=>{
+    const ct = ctOf(c), th = (actual[c]||0)/1e6, pct = ct? th/ct*100 : 0;
+    const cov = coverage[c] || {tong:0,khop:0};
+    const isManual = manual[c]!=null;
+    const brs = CHUOI.branches.filter(b=>b.chuoi===c).sort((a,b)=> (branchTh[b.ma_phu]||0) - (branchTh[a.ma_phu]||0));
+    h += `<tr style="cursor:pointer;" onclick="toggleChuoiBranches('${c.replace(/'/g,"\\'")}')"><td><strong>${c}</strong> <i class="fa-solid fa-caret-down text-muted" style="font-size:0.6rem;"></i></td><td class="text-end">${fmt1(ct)}</td><td class="text-end fw-bold text-primary">${fmt1(th)}</td><td class="text-center"><span class="badge ${pct>=70?'bg-success':(pct>=40?'bg-warning text-dark':'bg-danger')}">${fmt1(pct)}%</span></td><td class="text-center">${isManual?'(nhập tay)':cov.khop+'/'+cov.tong}</td><td class="text-center" onclick="event.stopPropagation()"><input type="number" min="0" step="1" value="${manual[c]!=null?manual[c]:''}" placeholder="tr" style="width:64px;font-size:0.68rem;padding:1px 4px;" class="form-control form-control-sm d-inline-block" onchange="setChuoiManual('${c}', this.value); renderChuoi();"></td></tr>`;
+    h += `<tr id="chuoiBr-${c.replace(/"/g,'&quot;')}" style="display:none;"><td colspan="6" style="background:#f8fafc; padding:6px 10px;"><table class="table table-sm mb-0" style="font-size:0.68rem;"><thead><tr><th>Chi nhánh</th><th>Mã phụ</th><th class="text-end">TH (tr)</th><th class="text-center">Khớp</th></tr></thead><tbody>`;
+    brs.forEach(b=>{
+      const bth = branchTh[b.ma_phu]||0, khop = bth>0;
+      h += `<tr><td>${b.ten}</td><td class="text-muted">${b.ma_phu}</td><td class="text-end ${khop?'fw-bold text-primary':''}">${fmt1(bth)}</td><td class="text-center">${khop?'✅':'—'}</td></tr>`;
+    });
+    h += `</tbody></table></td></tr>`;
+  });
+  h += '</tbody></table></div><div class="text-muted mt-1" style="font-size:0.6rem;">Cột "Chi nhánh khớp" = số chi nhánh của chuỗi đó tìm thấy trong dữ liệu Bán hàng đang nạp / tổng số chi nhánh. Chi nhánh không khớp (dấu —) có thể do NPP chưa có trong kỳ dữ liệu hiện tại, không có nghĩa là chi nhánh không bán được hàng. Ô "Nhập tay" dùng khi không đối chiếu được (VD: Anh Khoa - NPP Hiệp Lợi) và sẽ thay thế số Thực hiện tự động của cả chuỗi.</div></div>';
+  if(chuoiKhongCoTarget.length){
+    h += `<div class="kpi-card mt-2" style="border-left:3px solid var(--danger);"><div class="fw-bold text-danger mb-1" style="font-size:0.75rem;">⚠️ ${chuoiKhongCoTarget.length} chuỗi (${soCnKhongCoTarget} chi nhánh) chưa có chỉ tiêu trong file SUM, chưa tính vào các số ở trên</div><div class="text-muted" style="font-size:0.65rem;">${chuoiKhongCoTarget.join(', ')}</div></div>`;
+  }
+  box.innerHTML = h;
+}
+
 function resetLocalCache(){
   if(!confirm('Xóa Bán hàng + Đi tuyến đã lưu trên máy này và tải lại mới từ Cloud?')) return;
   const keys = [RAW_KEY, VISIT_KEY, META_KEY];
@@ -3700,6 +3847,7 @@ function applyGlobalFilter(){
   renderHomnay();
   try{ renderAsmHome(); }catch(e){ console.log("ASM Hôm nay:", e); }
   try{ renderKhToday(); }catch(e){ console.log("Khách hôm nay:", e); }
+  try{ renderChuoi(); }catch(e){ console.log("Chuỗi:", e); }
   renderAsoMoi();
   renderBanlaiList();
   renderAlertsAndRanking(agg);
@@ -3761,7 +3909,7 @@ function exportCurrentFile() {
     const keysToSave = [
       'BAMMK4_RAW_V1', 'BAMMK4_ROUTE_V1', 'BAMMK4_SN_V1', 'BAMMK4_META_V1', 
       'BAMMK4_TARGET_V1', 'BAMMK4_MASTER_V1', 'BAMMK4_MASTER_CAT_V1', 
-      'BAMMK4_VISIT_V1', 'BAMMK4_WW_V1', 'BAMMK4_BASE_V1'
+      'BAMMK4_VISIT_V1', 'BAMMK4_WW_V1', 'BAMMK4_BASE_V1', 'BAMMK4_CHUOI_V1'
     ];
 
     // Tạo object data trực tiếp để KHÔNG bị phình dung lượng do double-stringify
@@ -3787,7 +3935,7 @@ function exportCurrentFile() {
     let fullHtml = '<!DOCTYPE html>\n' + htmlCopy.outerHTML;
 
     // --- DỌN DẸP RÁC: Xóa data tĩnh cũ để file không bị nhân đôi dung lượng ---
-    const marks = ['RAW', 'ROUTE', 'SN', 'TARGETS', 'SKUKPI', 'VISIT', 'WW', 'BASE'];
+    const marks = ['RAW', 'ROUTE', 'SN', 'TARGETS', 'SKUKPI', 'VISIT', 'WW', 'BASE', 'CHUOI'];
     marks.forEach(mark => {
       const regex = new RegExp('/\\*__START_' + mark + '__\\*/[\\s\\S]*?/\\*__END_' + mark + '__\\*/', 'g');
       fullHtml = fullHtml.replace(regex, '/*__START_' + mark + '__*/[]/*__END_' + mark + '__*/');
@@ -3828,7 +3976,7 @@ function exportCurrentFile() {
       syncScript.id = 'sync-data-script';
       htmlCopy.querySelector('head').prepend(syncScript);
     }
-    const keysToSave = ['BAMMK4_RAW_V1', 'BAMMK4_ROUTE_V1', 'BAMMK4_SN_V1', 'BAMMK4_META_V1', 'BAMMK4_TARGET_V1', 'BAMMK4_MASTER_V1', 'BAMMK4_MASTER_CAT_V1', 'BAMMK4_VISIT_V1', 'BAMMK4_WW_V1', 'BAMMK4_BASE_V1'];
+    const keysToSave = ['BAMMK4_RAW_V1', 'BAMMK4_ROUTE_V1', 'BAMMK4_SN_V1', 'BAMMK4_META_V1', 'BAMMK4_TARGET_V1', 'BAMMK4_MASTER_V1', 'BAMMK4_MASTER_CAT_V1', 'BAMMK4_VISIT_V1', 'BAMMK4_WW_V1', 'BAMMK4_BASE_V1', 'BAMMK4_CHUOI_V1'];
     let dataObjStr = "{\n";
     keysToSave.forEach(key => {
       let val = localStorage.getItem(key);
@@ -3839,7 +3987,7 @@ function exportCurrentFile() {
 
     syncScript.textContent = `(function(){ var data = ${dataObjStr}; for (var key in data) { localStorage.setItem(key, JSON.stringify(data[key])); } })();`;
     let fullHtml = '<!DOCTYPE html>\n' + htmlCopy.outerHTML;
-    const marks = ['RAW', 'ROUTE', 'SN', 'TARGETS', 'SKUKPI', 'VISIT', 'WW', 'BASE'];
+    const marks = ['RAW', 'ROUTE', 'SN', 'TARGETS', 'SKUKPI', 'VISIT', 'WW', 'BASE', 'CHUOI'];
     marks.forEach(mark => {
       const regex = new RegExp('/\\*__START_' + mark + '__\\*/[\\s\\S]*?/\\*__END_' + mark + '__\\*/', 'g');
       fullHtml = fullHtml.replace(regex, '/*__START_' + mark + '__*/[]/*__END_' + mark + '__*/');
