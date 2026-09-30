@@ -1770,7 +1770,7 @@ function statusOk(tt, includeAllExceptRejected){
   return t===norm(APPROVED_STATUS) || t===norm(RETURNED_STATUS);
 }
 // SKU sữa nước (danh sách Bán chéo): chỉ phục vụ data Bán chéo, KHÔNG đếm vào bất kỳ ASO nào
-function isCrossSellRow(r){ return SN_SKUS.has(r.sku) && !(r.npp && norm(r.npp).includes(norm(HUE_PHUONG_NPP))); }
+function isCrossSellRow(r){ return SN_SKUS.has(r.sku); }   // Sữa nước: luôn tính vào Bán chéo, trừ hết ở mọi NPP (không còn ngoại lệ Huệ Phương)
 function computeAggregates(pred, includeAllExceptRejected){
   const validRaw = RAW.filter(r=> statusOk(r.tt, includeAllExceptRejected) && pred(r.ngay));
 
