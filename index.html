@@ -391,7 +391,7 @@
       </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" data-gs="1,2,4">
-          <thead><tr><th>USM</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
+          <thead><tr><th>USM</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>1T Chưa Mua</th><th>Bán Lại 1T</th></tr></thead>
           <tbody id="banlaiUsmTbody"></tbody>
         </table>
       </div>
@@ -404,7 +404,7 @@
       </div>
       <div class="table-responsive">
         <table class="table table-hover table-custom mb-0" data-gs="1,2,4">
-          <thead><tr><th>USM / NVBH</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>T8 Chưa Mua</th><th>Bán Lại T8</th></tr></thead>
+          <thead><tr><th>USM / NVBH</th><th>MCP</th><th>3T Chưa Mua</th><th>Bán Lại 3T</th><th>1T Chưa Mua</th><th>Bán Lại 1T</th></tr></thead>
           <tbody id="banlaiTbody"></tbody>
         </table>
       </div>
@@ -419,7 +419,7 @@
     </div>
     
     <div class="d-flex gap-1 mb-1" style="font-size: 0.7rem;">
-      <select id="banlaiGroupFilter" class="form-select form-select-sm" style="flex:1; min-width:0; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Mọi nhóm</option><option value="M3">3T chưa mua</option><option value="T8">T8 chưa mua</option></select>
+      <select id="banlaiGroupFilter" class="form-select form-select-sm" style="flex:1; min-width:0; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Mọi nhóm</option><option value="M3">3T chưa mua (T7-8-9)</option><option value="T8">1T chưa mua (T9)</option></select>
       <select id="banlaiStatusFilter" class="form-select form-select-sm" style="flex:1; min-width:0; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Mọi trạng thái</option><option value="DONE">✅ Đã Bán Lại</option><option value="PENDING">❌ Chưa Bán Lại</option></select>
       <select id="banlaiThuFilter" class="form-select form-select-sm" style="flex:1; min-width:0; background:#fffaf0; color:#1e3a52; border:1px solid #ffe0b3;" onchange="renderBanlaiList()"><option value="ALL">Mọi thứ</option><option value="2">Thứ 2</option><option value="3">Thứ 3</option><option value="4">Thứ 4</option><option value="5">Thứ 5</option><option value="6">Thứ 6</option><option value="7">Thứ 7</option><option value="CN">Chủ Nhật</option></select>
     </div>
@@ -1910,8 +1910,9 @@ function computeAggregates(pred, includeAllExceptRejected){
     const uk = usmKey(c.usm);
     const bu = banlaiByUsm[uk] = banlaiByUsm[uk] || {m3:0, back3:0, t8:0, back1:0};
     const daMuaLai = activeSeptSet.has(c.makh);
-    if(c.m3nobuy){ b.m3++; bu.m3++; if(daMuaLai){ b.back3++; bu.back3++; } }
-    if(c.t8nobuy){ b.t8++; bu.t8++; if(daMuaLai){ b.back1++; bu.back1++; } }
+    const g = banlaiGroups(c);
+    if(g.m3){ b.m3++; bu.m3++; if(daMuaLai){ b.back3++; bu.back3++; } }
+    if(g.m1){ b.t8++; bu.t8++; if(daMuaLai){ b.back1++; bu.back1++; } }
   });
 
   // VIP: KH có DS T09 cao nhưng chưa phát sinh mua hàng trong data thô Tháng 9 (toàn kỳ, không phụ thuộc bộ lọc ngày)
@@ -2199,6 +2200,26 @@ function renderKenhByUsm(agg){
     html += `<tr><td><strong>${kb}</strong></td><td class="text-center fw-bold">${fmt0(t.mcp)}</td><td class="text-center text-success fw-bold">${fmt0(t.active)}</td><td class="text-end fw-bold">${fmt1(t.ds8)}</td><td class="text-end fw-bold text-primary">${fmt1(t.ds9/1e6)}</td></tr>`;
   });
   document.getElementById('kenhByUsmTbody').innerHTML = html;
+}
+
+// Nhóm "chưa mua" tính lại từ MCP + doanh số: 1T = tháng 9 chưa mua; 3T = cả tháng 7, 8, 9 đều chưa mua
+var _blCache = {raw:null, base:null, sept:null};
+function _septBuyers(){
+  if(_blCache.raw===RAW && _blCache.base===BASE && _blCache.sept) return _blCache.sept;
+  const set = new Set();
+  const b9 = (BASE||{})['9'] || {};
+  Object.keys(b9).forEach(k=>{ const a=b9[k]; if(a && a.reduce((x,y)=>x+(y||0),0)>0) set.add(k); });
+  (RAW||[]).forEach(r=>{ if(r && r.ngay && String(r.ngay).slice(3)==='09/2026' && r.dt>0 && statusOk(r.tt) && !isCrossSellRow(r)) set.add(r.makh); });
+  _blCache = {raw:RAW, base:BASE, sept:set};
+  return set;
+}
+function banlaiGroups(c){
+  // Tháng 9 mua = DS T09 trong file Tuyến (tổng mọi nhãn, không trừ nhãn nào) HOẶC có doanh số nền T9; T7, T8 lấy doanh số nền (tổng mọi nhãn)
+  const B = BASE||{};
+  const sumOf = (m)=>{ const a = B[m] && B[m][c.makh]; return a ? a.reduce((x,y)=>x+(y||0),0) : 0; };
+  const b9 = (c.dsT08>0) || sumOf('9')>0 || _septBuyers().has(c.makh);
+  const b8 = sumOf('8')>0, b7 = sumOf('7')>0;
+  return { m1: !b9, m3: !(b7 || b8 || b9) };
 }
 
 function renderBanlaiUsm(agg){
@@ -3068,14 +3089,15 @@ function getBanlaiFilteredRows(){
     if(norm(c.kenh)==='GTPH') return;
     if(thuFilter!=='ALL' && !(c.thuList||[]).includes(thuFilter)) return;
     const daMuaLai = agg.activeSeptSet.has(c.makh);
-    if(c.m3nobuy && groupFilter!=='T8'){
+    const g = banlaiGroups(c);
+    if(g.m3 && groupFilter!=='T8'){
       if(!(statusFilter==='DONE' && !daMuaLai) && !(statusFilter==='PENDING' && daMuaLai)){
         rows.push({...c, nhom:'3 Tháng', daMuaLai});
       }
     }
-    if(c.t8nobuy && groupFilter!=='M3'){
+    if(g.m1 && groupFilter!=='M3'){
       if(!(statusFilter==='DONE' && !daMuaLai) && !(statusFilter==='PENDING' && daMuaLai)){
-        rows.push({...c, nhom:'Tháng 9', daMuaLai});
+        rows.push({...c, nhom:'1 Tháng', daMuaLai});
       }
     }
   });
@@ -3339,7 +3361,7 @@ function getUsmPriorityToday(uk, agg, thuToday){
       if(norm(c.kenh)==='GTPH') return;
       if(usmKey(c.usm)!==uk) return;
       if(!(c.thuList||[]).includes(thuToday)) return;
-      if(!(c.m3nobuy || c.t8nobuy)) return;
+      { const g = banlaiGroups(c); if(!(g.m3 || g.m1)) return; }
       if(agg.activeSeptSet.has(c.makh)) return; // đã bán lại rồi, khỏi nhắc
       items.push({name:c.tenkh, reason:'Chưa bán lại, đúng lịch hôm nay', ds:c.dsT08});
     });
@@ -4175,21 +4197,29 @@ function renderBanlaiList() {
   const thuVal = document.getElementById('banlaiThuFilter') ? document.getElementById('banlaiThuFilter').value : 'ALL';
   const usmVal = document.getElementById('usmFilter') ? document.getElementById('usmFilter').value : 'ALL';
 
-  if (!window.BANLAI_DATA_FULL || !Array.isArray(window.BANLAI_DATA_FULL)) {
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-3">Chưa có dữ liệu.</td></tr>'; return;
+  const agg = (typeof LAST_AGG!=='undefined') ? LAST_AGG : null;
+  if (!agg || !ROUTE.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Chưa có dữ liệu.</td></tr>'; return;
   }
-  let filtered = window.BANLAI_DATA_FULL.filter(item => {
+  const _data = [];
+  ROUTE.forEach(c=>{
+    if(norm(c.kenh)==='GTPH') return;
+    const g = banlaiGroups(c);
+    const done = agg.activeSeptSet.has(c.makh);
+    const base = { tenKH:c.tenkh, maKH:c.makh, kenh:c.kenh, nvbh:c.nvbh, usm:c.usm, thuList:c.thuList||[], thu:(c.thuList||[]).map(t=>t==='CN'?'CN':t).join(','), dsT08:c.dsT08, daBanLai:done };
+    if(g.m3) _data.push({...base, nhom:'M3'});
+    if(g.m1) _data.push({...base, nhom:'T8'});
+  });
+  _data.sort((x,y)=> (y.dsT08||0)-(x.dsT08||0));
+  window.BANLAI_DATA_FULL = _data;
+  let filtered = _data.filter(item => {
     if (usmVal !== 'ALL' && item.usm && !item.usm.includes(usmVal)) return false;
     if (grpVal !== 'ALL' && item.nhom !== grpVal) return false;
     if (statusVal !== 'ALL') {
-      const isDone = item.daBanLai === true || item.status === 'DONE';
-      if (statusVal === 'DONE' && !isDone) return false;
-      if (statusVal === 'PENDING' && isDone) return false;
+      if (statusVal === 'DONE' && !item.daBanLai) return false;
+      if (statusVal === 'PENDING' && item.daBanLai) return false;
     }
-    if (thuVal !== 'ALL') {
-      const thuNormalized = String(item.thu || '').replace(/[^0-9CN]/gi, '');
-      if (thuNormalized !== thuVal) return false;
-    }
+    if (thuVal !== 'ALL' && !item.thuList.includes(thuVal)) return false;
     return true;
   });
   if (filtered.length === 0) {
@@ -4205,7 +4235,7 @@ function renderBanlaiList() {
       const textMsg = encodeURIComponent(`🚨 ASM nhắc việc: Khách ngủ đông [${kh.tenKH}] (DS T09: ${dsT08}Tr) nằm trên tuyến Thứ ${kh.thu}. Em ưu tiên ghé thăm và chốt sale lại giúp anh nhé!`);
       actionBtn = `<a href="https://zalo.me/?text=${textMsg}" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.62rem; font-weight: bold; border-radius: 4px; text-decoration: none;"><i class="fa-solid fa-paper-plane me-1"></i> Zalo</a>`;
     }
-    html += `<tr><td><strong>${kh.tenKH || ''}</strong><br><span class="text-muted" style="font-size:0.58rem; white-space:nowrap;">${kh.maKH || ''} · ${kenhShort(kh.kenh) || 'GT'}</span></td><td>${kh.nvbh || ''}<br><span class="text-muted" style="font-size:0.58rem;">${kh.usm || ''}</span></td><td class="text-center"><strong>${kh.thu || ''}</strong></td><td class="text-center"><span class="badge bg-warning text-dark">${kh.nhom === 'M3' ? '3T' : 'T8'}</span></td><td class="text-center">${statusBadge}</td><td class="text-end fw-bold text-danger">${dsT08}</td><td class="text-center">${actionBtn}</td></tr>`;
+    html += `<tr><td><strong>${kh.tenKH || ''}</strong><br><span class="text-muted" style="font-size:0.58rem; white-space:nowrap;">${kh.maKH || ''} · ${kenhShort(kh.kenh) || 'GT'}</span></td><td>${kh.nvbh || ''}<br><span class="text-muted" style="font-size:0.58rem;">${kh.usm || ''}</span></td><td class="text-center"><strong>${kh.thu || ''}</strong></td><td class="text-center"><span class="badge bg-warning text-dark">${kh.nhom === 'M3' ? '3T' : '1T'}</span></td><td class="text-center">${statusBadge}</td><td class="text-end fw-bold text-danger">${dsT08}</td><td class="text-center">${actionBtn}</td></tr>`;
   });
   tbody.innerHTML = html;
 }
