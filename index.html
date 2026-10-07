@@ -260,6 +260,7 @@
   <button onclick="switchTab('sec-kenh')">Kênh</button>
   <button onclick="switchTab('sec-vip')">VIP</button>
   <button onclick="switchTab('sec-bancheo')">Bán chéo</button>
+  <button onclick="switchTab('sec-tracknhan')">Tracking Brandy</button>
   <button onclick="switchTab('sec-khachhang')">Khách hàng</button>
   <button onclick="switchTab('sec-tuyends')">Tuyến</button>
 </div>
@@ -536,6 +537,16 @@
       </div>
     </div>
   </div>
+  <!-- ================= TRACKING HẰNG NGÀY THEO BRANDY ================= -->
+  <div id="sec-tracknhan" class="section-tab">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-bold" style="color:#f97316;">📈 TRACKING THEO BRANDY</div>
+      <button class="btn btn-sm btn-warning fw-bold shadow-sm" onclick="exportToImage('capture-tkn','Tracking_Brandy')" style="font-size:0.65rem;">Chụp ảnh</button>
+    </div>
+    <div class="d-flex gap-1 mb-2 flex-wrap align-items-center" id="tknPills"></div>
+    <div id="capture-tkn"><div id="tknBody"></div></div>
+  </div>
+
   <!-- ================= 3. TRẠM PHÂN TÍCH KPI TỔNG HỢP ================= -->
   <div id="sec-kpi-tonghop" class="section-tab">
 
@@ -3857,6 +3868,7 @@ function applyGlobalFilter(){
   try{ renderKhToday(); }catch(e){ console.log("Khách hôm nay:", e); }
   try{ renderChuoi(); }catch(e){ console.log("Chuỗi:", e); }
   renderAsoMoi();
+  try{ renderTrackNhan(); }catch(e){ console.log("Tracking Brandy:", e); }
   renderBanlaiList();
   renderAlertsAndRanking(agg);
   saveHistorySnapshot();
@@ -3878,6 +3890,115 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Tự đồng bộ từ Cloud khi mở trang (chạy nền, có mạng mới chạy; lỗi thì giữ data đã lưu)
   setTimeout(()=>{ if(navigator.onLine!==false && typeof XLSX!=='undefined') handleCloudSync({silent:true}); }, 400);
 });
+
+// Mapping SKU -> Brandy (theo báo cáo "Brandy / Mã SP / KPI / Cat" xuất ngày 07/10/2026): sku: [tên, quy cách/thùng, Brandy, Cat]
+const TKN_SKU = {"500002028": ["SB Lacto 0+ 800g", 12, "Grow Plus+ Lactoferrin", "SB"], "500002274": ["SBPS Lacto 110ml", 24, "Grow Plus+ Lactoferrin", "SBPS"], "500001338": ["SPDD GROWPLUS+ 0-12 THÁNG L350GX24_DCM", 24, "Grow Plus+ SDD", "SB"], "500001339": ["SPDD GROWPLUS+ 0-12 THÁNG L780GX12_DCM", 12, "Grow Plus+ SDD", "SB"], "500001495": ["TPCDADB GROWPLUS ĐỎ SDD TRÊN 1T L1500GX6", 6, "Grow Plus+ SDD", "SB"], "500001497": ["TPCDADB GROWPLUS ĐỎ SDD TRÊN 2T L1500GX6", 6, "Grow Plus+ SDD", "SB"], "500002056": ["SB GP+ ĐỎ SDD 1+ L850GX12", 12, "Grow Plus+ SDD", "SB"], "500002242": ["SUDD GP+ ĐỎ SDD H110MLX48 LOY", 48, "Grow Plus+ SDD", "SBPS"], "500002243": ["SUDD GP+ ĐỎ SDD H180MLX48 LOY", 48, "Grow Plus+ SDD", "SBPS"], "500000381": ["SPDDCT GrowPLUS+ Sữa Non Vàng - SI 0-12 tháng 400g", 24, "Grow Plus+ SN", "SB"], "500000383": ["SDDCT GROWPLUS VÀNG-SN<1T L800GX12-SI", 12, "Grow Plus+ SN", "SB"], "500001122": ["SPDDCT GP+ SN 1+ VÀNG_SI L800GX12", 12, "Grow Plus+ SN", "SB"], "500001540": ["SPDDCT GP SN 2+_VÀNG SI_L800GX12_LOYALTY", 12, "Grow Plus+ SN", "SB"], "500002270": ["SUDD GP+ SN VÀNG 1+ 110MLX48 LOY", 48, "Grow Plus+ SN", "SBPS"], "500002271": ["SUDD GP+ SN VÀNG 1+ 180MLX48 LOY", 48, "Grow Plus+ SN", "SBPS"], "500001498": ["SPDDCT GROWPLUS XANH  TRÊN 1T L900GX12", 12, "Grow Plus+ TCKM", "SB"], "500001499": ["SPDDCT GROWPLUS XANH  TRÊN 1T L1500GX6", 6, "Grow Plus+ TCKM", "SB"], "500001647": ["TPBS SPDD GP+ 2+ XANH L1500GX6_LOY", 6, "Grow Plus+ TCKM", "SB"], "500002246": ["SUDD GP+ XANH BA 1+ H110MLX48 LOY", 48, "Grow Plus+ TCKM", "SBPS"], "500002247": ["SUDD GP+ XANH BA 1+ H180MLX48 LOY", 48, "Grow Plus+ TCKM", "SBPS"], "500001535": ["SPDDCT GP+ 0+ XANH NHẠT_TH_L400GX24", 24, "Grow Plus+ TH", "SB"], "500001536": ["SPDDCT GP+ 0+ XANH NHẠT_TH_L800GX12", 12, "Grow Plus+ TH", "SB"], "500001537": ["SPDDCT GP+ 1+ XANH NHẠT_TH_L800GX12", 12, "Grow Plus+ TH", "SB"], "500002250": ["SUDD GP+ XANH NHẠT 1+ H110MLX48 LOY", 48, "Grow Plus+ TH", "SBPS"], "500002251": ["SUDD GP+ XANH NHẠT 1+ H180MLX48 LOY", 48, "Grow Plus+ TH", "SBPS"], "500001425": ["Nuti Canxi 500g", 14, "NCDD", "SB"], "500002064": ["Nuvi Grow Height (mã 500002064)", 12, "Nuvi Grow Height", "SB"], "500002065": ["SB NUVI GROW HEIGHT 2+ L800GX12 LOY", 12, "Nuvi Grow Height", "SB"], "500002070": ["Nuvi Grow Height (mã 500002070)", 24, "Nuvi Grow Height", "SBPS"], "500002254": ["SUDD NVG HEIGHT H110MLX24 LOY", 24, "Nuvi Grow Height", "SBPS"], "500002255": ["Nuvi Grow Height (mã 500002255)", 24, "Nuvi Grow Height", "SBPS"], "500001365": ["SPDDPS VARNA COMPLETE C237MLX24", 24, "Varna Complete", "SBPS"], "500001366": ["SPDDPS VARNA DIABETES_237MLX24CHAI_DCM", 24, "Varna Diabetes", "SBPS"], "500002244": ["SUDD GP+ ĐỎ SDD IĐ H110MLX48 LOY", 48, "Grow Plus+ SDD ID", "SBPS"], "500002245": ["SUDD GP+ ĐỎ SDD IĐ H180MLX48 LOY", 48, "Grow Plus+ SDD ID", "SBPS"], "500001627": ["SPDDPS VARNA COLOSTRUM 237MLX12_TKM", 12, "Varna Colostrum Combi", "SBPS"], "500001628": ["SPDDPS VARNA DIABETES H237MLX12_TKM", 12, "Varna Diabetes Combi", "SBPS"], "500002275": ["SBPS Lacto 180ml", 24, "Grow Plus+ Lactoferrin", "SBPS"], "500002027": ["SB Lacto 0+ 400g", 24, "Grow Plus+ Lactoferrin", "SB"], "500002029": ["SB Lacto 1+ 800g", 12, "Grow Plus+ Lactoferrin", "SB"], "500002030": ["SB Lacto 2+ 800g", 12, "Grow Plus+ Lactoferrin", "SB"], "500001423": ["Värna Diabetes 400g", 14, "NCDD", "SB"], "500001424": ["Värna Complete 500g", 14, "NCDD", "SB"], "500001427": ["Värna Calcium 500g", 14, "NCDD", "SB"], "500001428": ["NCDD Diabetcare 400g", 14, "NCDD", "SB"], "500001444": ["Diabetcare Gold 900g", 12, "Diabetcare Gold", "SB"]};
+
+const TKN_FOCUS = [['Grow Plus+ Lactoferrin','Lactoferrin','#e0a100'], ['NCDD','NCDD','#16a34a'], ['Diabetcare Gold','Diabetcare Gold','#c2185b']];
+let TKN_SHEET = 'f3', TKN_CHART = null;
+function tknF2(n){ return (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function tknSheet(s){ TKN_SHEET = s; renderTrackNhan(); }
+function tknAddRow(map, key, r, pack){
+  const o = map[key] || (map[key] = { ds:0, sl:0, thung:0, cust:{} });
+  o.ds += r.dt||0; o.sl += r.sl||0; o.thung += (r.sl||0)/pack;
+  o.cust[r.makh] = (o.cust[r.makh]||0) + (r.dt||0);
+}
+function tknAso(o){ return o ? Object.values(o.cust).filter(v=>v>0).length : 0; }
+function tknCell(o){ return o ? `<td class="text-end fw-bold">${tknF2(o.ds/1e6)}</td><td class="text-center">${fmt0(tknAso(o))}</td>` : '<td class="text-end text-muted">-</td><td class="text-center text-muted">-</td>'; }
+function tknHead(first){
+  return `<thead><tr><th rowspan="2" style="vertical-align:middle;">${first}</th>${TKN_FOCUS.map(f=>`<th colspan="2" class="text-center" style="background:${f[2]};color:#fff;">${f[1]}</th>`).join('')}</tr>
+    <tr>${TKN_FOCUS.map(()=>'<th class="text-center">DS (Tr)</th><th class="text-center">KH</th>').join('')}</tr></thead>`;
+}
+function renderTrackNhan(){
+  const box = document.getElementById('tknBody'); if(!box) return;
+  document.getElementById('tknPills').innerHTML =
+    `<button class="btn btn-sm ${TKN_SHEET==='f3'?'btn-warning fw-bold':'btn-outline-secondary'}" style="font-size:0.74rem;" onclick="tknSheet('f3')">3 nhãn trọng tâm</button>
+     <button class="btn btn-sm ${TKN_SHEET==='full'?'btn-warning fw-bold':'btn-outline-secondary'}" style="font-size:0.74rem;" onclick="tknSheet('full')">Full nhãn</button>`;
+  const latest = getLatestDate();
+  if(!latest){ box.innerHTML = '<div class="text-muted p-2">Chưa có dữ liệu.</div>'; return; }
+  const [ld, lm, ly] = latest.split('/').map(Number);
+  const ym = `${ly}-${String(lm).padStart(2,'0')}`;
+  const rows = RAW.filter(r=> r.ngay && toISO(r.ngay).slice(0,7)===ym && TKN_SKU[String(r.sku)] && statusOk(r.tt) && !isCrossSellRow(r));
+  const B = {}, T = { byDay:{}, tot:{} };
+  rows.forEach(r=>{
+    const v = TKN_SKU[String(r.sku)], b = v[2], pack = v[1];
+    const o = B[b] || (B[b] = { byDay:{}, byNv:{}, byUsm:{}, tot:{} });
+    const day = parseInt(r.ngay.split('/')[0], 10);
+    tknAddRow(o.byDay, day, r, pack); tknAddRow(o.byNv, matchKey(r.nvbh), r, pack);
+    tknAddRow(o.byUsm, usmKey(r.usm), r, pack); tknAddRow(o.tot, 't', r, pack);
+    tknAddRow(T.byDay, day, r, pack); tknAddRow(T.tot, 't', r, pack);
+  });
+  const DOW = ['CN','T2','T3','T4','T5','T6','T7'];
+  const note = `<div class="text-muted" style="font-size:0.6rem;">Tháng ${String(lm).padStart(2,'0')}/${ly} · đơn Đã duyệt + Đã trả · DS trước VAT (Tr) · KH = số KH có DS ròng &gt; 0 · phân Brandy theo file export Brandy / Mã SP.</div>`;
+  let html = '';
+  if(TKN_SHEET==='f3'){
+    // ---- bảng theo ngày, 3 nhãn chung bảng
+    let tr = '';
+    const cum = TKN_FOCUS.map(()=>({ ds:0, cust:{} }));
+    for(let d=1; d<=ld; d++){
+      const dow = new Date(ly, lm-1, d).getDay();
+      const has = TKN_FOCUS.some(f=> B[f[0]] && B[f[0]].byDay[d]);
+      const muted = !has && !WORK_DOWS.includes(dow);
+      tr += `<tr style="${d===ld?'background:rgba(245,185,66,0.25);':''}${muted?'opacity:.45;':''}"><td>${String(d).padStart(2,'0')}/${String(lm).padStart(2,'0')} <span class="text-muted" style="font-size:0.6rem;">${DOW[dow]}</span></td>`;
+      TKN_FOCUS.forEach((f,i)=>{
+        const o = B[f[0]] && B[f[0]].byDay[d];
+        if(o){ cum[i].ds += o.ds; Object.keys(o.cust).forEach(k=>{ cum[i].cust[k] = (cum[i].cust[k]||0) + o.cust[k]; }); }
+        tr += tknCell(o);
+      });
+      tr += '</tr>';
+    }
+    tr += `<tr class="table-secondary"><td><strong>LŨY KẾ THÁNG</strong></td>${TKN_FOCUS.map(f=>tknCell(B[f[0]] && B[f[0]].tot.t)).join('')}</tr>`;
+    tr += `<tr><td class="text-muted">Thùng</td>${TKN_FOCUS.map(f=>{ const o=B[f[0]]&&B[f[0]].tot.t; return `<td class="text-end text-muted" colspan="2">${o?fmt1(o.thung):'-'}</td>`; }).join('')}</tr>`;
+    html += `<div class="card-box"><div style="height:190px;"><canvas id="tknChart"></canvas></div></div>
+      <div class="card-box"><div class="fw-bold mb-1" style="font-size:0.78rem;color:var(--gold);">➤ Theo ngày: Lactoferrin · NCDD · Diabetcare Gold</div>
+      <div class="table-responsive"><table class="table table-hover table-custom mb-0">${tknHead('Ngày')}<tbody>${tr}</tbody></table></div></div>`;
+    // ---- bảng USM / NVBH, 3 nhãn chung bảng
+    const order = ['Khánh','Điền','Phong','Nguyên','Oán'];
+    const nvList = buildNvbhListByUsm(true);
+    let nt = '';
+    order.forEach(uk=>{
+      nt += `<tr class="usm-head"><td><strong>${USM_FULLNAMES[uk]}</strong></td>${TKN_FOCUS.map(f=>tknCell(B[f[0]] && B[f[0]].byUsm[uk])).join('')}</tr>`;
+      (nvList[uk]||[]).forEach(it=>{
+        const any = TKN_FOCUS.some(f=> B[f[0]] && B[f[0]].byNv[it.key]);
+        nt += `<tr style="${any?'':'opacity:.45;'}"><td style="padding-left:14px;">${it.display}</td>${TKN_FOCUS.map(f=>tknCell(B[f[0]] && B[f[0]].byNv[it.key])).join('')}</tr>`;
+      });
+    });
+    nt += `<tr class="table-secondary"><td><strong>TỔNG KHU VỰC</strong></td>${TKN_FOCUS.map(f=>tknCell(B[f[0]] && B[f[0]].tot.t)).join('')}</tr>`;
+    html += `<div class="card-box"><div class="fw-bold mb-1" style="font-size:0.78rem;color:var(--info);">➤ Theo USM / NVBH (lũy kế tháng)</div>
+      <div class="table-responsive"><table class="table table-hover table-custom mb-0">${tknHead('USM / NVBH')}<tbody>${nt}</tbody></table></div></div>` + note;
+  } else {
+    // ---- 1 bảng full nhãn (mỗi dòng 1 Brandy)
+    const brands = Array.from(new Set(Object.keys(TKN_SKU).map(k=>TKN_SKU[k][2])));
+    const focusKeys = TKN_FOCUS.map(f=>f[0]);
+    const dsOf = b => (B[b] && B[b].tot.t) ? B[b].tot.t.ds : 0;
+    const sorted = focusKeys.concat(brands.filter(b=>!focusKeys.includes(b)).sort((a,b)=>dsOf(b)-dsOf(a)));
+    let ft = '';
+    sorted.forEach(b=>{
+      const o = B[b], t = o && o.tot.t, last = o && o.byDay[ld];
+      const isF = focusKeys.includes(b);
+      ft += `<tr style="${isF?'background:rgba(245,185,66,0.18);':''}${t?'':'opacity:.5;'}"><td>${isF?'★ ':''}${b}</td>
+        <td class="text-end fw-bold">${t?tknF2(t.ds/1e6):'-'}</td><td class="text-center">${t?fmt0(tknAso(t)):'-'}</td><td class="text-end">${t?fmt1(t.thung):'-'}</td>
+        <td class="text-end text-warning fw-bold">${last?tknF2(last.ds/1e6):'-'}</td><td class="text-center">${last?fmt0(tknAso(last)):'-'}</td></tr>`;
+    });
+    const tt = T.tot.t, tl = T.byDay[ld];
+    ft += `<tr class="table-secondary"><td><strong>TỔNG CÁC BRANDY</strong></td><td class="text-end">${tt?tknF2(tt.ds/1e6):'-'}</td><td class="text-center">${tt?fmt0(tknAso(tt)):'-'}</td><td class="text-end">${tt?fmt1(tt.thung):'-'}</td><td class="text-end">${tl?tknF2(tl.ds/1e6):'-'}</td><td class="text-center">${tl?fmt0(tknAso(tl)):'-'}</td></tr>`;
+    html += `<div class="card-box"><div class="fw-bold mb-1" style="font-size:0.78rem;color:var(--gold);">➤ Full nhãn (Brandy) — lũy kế tháng &amp; ngày ${latest.slice(0,5)}</div>
+      <div class="table-responsive"><table class="table table-hover table-custom mb-0">
+      <thead><tr><th>Brandy</th><th>DS lũy kế (Tr)</th><th>KH mua</th><th>Thùng</th><th>DS ngày ${latest.slice(0,5)}</th><th>KH ngày</th></tr></thead><tbody>${ft}</tbody></table></div></div>` + note;
+  }
+  box.innerHTML = html;
+  // ---- biểu đồ (sheet 3 nhãn)
+  if(TKN_SHEET==='f3' && typeof Chart !== 'undefined'){
+    const labels = []; for(let d=1; d<=ld; d++) labels.push(String(d));
+    if(TKN_CHART){ try{ TKN_CHART.destroy(); }catch(e){} }
+    TKN_CHART = new Chart(document.getElementById('tknChart'), {
+      type:'bar',
+      data:{ labels, datasets: TKN_FOCUS.map(f=>({ label:f[1], backgroundColor:f[2], data: labels.map((_,i)=>{ const o = B[f[0]] && B[f[0]].byDay[i+1]; return o ? +(o.ds/1e6).toFixed(2) : 0; }) })) },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ boxWidth:10, font:{size:10} } } },
+        scales:{ x:{ stacked:true, ticks:{font:{size:9}} }, y:{ stacked:true, beginAtZero:true, ticks:{font:{size:9}}, title:{display:true,text:'DS (Tr)',font:{size:9}} } } }
+    });
+  }
+}
 
 function checkLibrariesLoaded(){
   const missing = [];
